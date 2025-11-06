@@ -16,28 +16,47 @@ Build a multi-agent system with four specialized agents (Rephrase, Review, Revis
 ## Technical Context
 
 **Language/Version**: Python 3.11+
+
 **Primary Dependencies**:
-- LangChain or similar agent framework for LLM orchestration
-- OpenAI API / Anthropic Claude API for LLM backend
-- Pydantic for structured data validation and parsing
-- SQLite/PostgreSQL for persistent storage
-**Storage**: SQLite for development, PostgreSQL for production (stores Problems, QualityAssessments, Solutions, RephraseSessions, Agent execution logs)
+- **Agent Framework**: CrewAI (MIT licensed, simple API for role-based multi-agent orchestration)
+- **LLM Backend**: OpenAI GPT-4.1 (GPT-4o/GPT-4 Turbo) for optimal math problem quality
+- **OCR**: PaddleOCR (Apache 2.0, open-source Chinese OCR with math symbol support)
+- **Data Validation**: Pydantic for structured data validation and parsing
+- **Image Processing**: PIL/OpenCV for photo preprocessing
+- **Storage**: SQLite/PostgreSQL for persistent storage
+
+**Storage**: SQLite for development, PostgreSQL for production (stores Problems, QualityAssessments, Solutions, RephraseSessions, Agent execution logs, UploadedImages)
+
 **Testing**: pytest with contract tests for agent output formats, integration tests for full workflows
+
 **Target Platform**: Python CLI initially, API server (FastAPI) for production
+
 **Project Type**: Single project (Python backend + CLI)
+
 **Performance Goals**:
-- <60 seconds average for full pipeline (Rephrase → Review → Revise loop → Solution)
+- <60 seconds average for full pipeline (Photo OCR → Rephrase → Review → Revise loop → Solution)
 - Support concurrent processing of multiple problems
-- <2 seconds per individual agent invocation
+- <2 seconds per individual agent invocation (excluding LLM API latency)
+- OCR processing: <3 seconds per image (CPU mode)
+
 **Constraints**:
-- LLM token limits (typically 4K-8K for input, need to handle long problems gracefully)
+- LLM token limits (GPT-4.1: 128K context window, typically 4K-8K per agent call)
 - Quality threshold τ_rev = 4.5 by default (configurable 3.0-5.0)
 - Maximum 5 review-revise iterations to prevent infinite loops
 - Must preserve mathematical correctness (zero tolerance for invalid problems passing threshold)
+- OCR accuracy target: ≥85% for printed Chinese math problems
+- Photo upload: Max 10MB per image, JPEG/PNG formats
+
 **Scale/Scope**:
 - Initial: Single-user CLI processing 10-50 problems per session
 - Production: Multi-user API supporting 100+ concurrent users, 1000+ problems per day
 - Agent execution logs retained for traceability and training data
+- OCR logs retained for accuracy monitoring and improvement
+
+**Cost Considerations**:
+- GPT-4.1 API: ~$0.05 per problem (including 2 iterations)
+- Daily budget (100 problems): ~$5/day, $150/month
+- Trade-off: Higher cost for premium problem quality (education value first)
 
 ## Constitution Check
 
@@ -103,12 +122,19 @@ AgenticMath/
 │   │   ├── review_agent.py
 │   │   ├── revise_agent.py
 │   │   └── solver_agent.py
+│   ├── ocr/                 # OCR processing
+│   │   ├── __init__.py
+│   │   ├── image_preprocessor.py  # Image cleaning and enhancement
+│   │   ├── text_extractor.py      # PaddleOCR integration
+│   │   ├── diagram_detector.py    # Detect and describe diagrams
+│   │   └── ocr_pipeline.py        # Complete OCR workflow
 │   ├── models/              # Data models (Pydantic)
 │   │   ├── __init__.py
 │   │   ├── problem.py
 │   │   ├── quality_assessment.py
 │   │   ├── solution.py
 │   │   ├── rephrase_session.py
+│   │   ├── uploaded_image.py      # Image metadata
 │   │   └── agent_execution.py
 │   ├── orchestration/       # Workflow orchestration
 │   │   ├── __init__.py
@@ -121,8 +147,9 @@ AgenticMath/
 │   │       ├── __init__.py
 │   │       ├── problem_repository.py
 │   │       ├── assessment_repository.py
-│   │       └── solution_repository.py
-│   ├── prompts/             # LLM prompt templates
+│   │       ├── solution_repository.py
+│   │       └── image_repository.py
+│   ├── prompts/             # LLM prompt templates (Traditional Chinese)
 │   │   ├── __init__.py
 │   │   ├── rephrase_prompt.py
 │   │   ├── review_prompt.py
@@ -198,21 +225,54 @@ While four agents might initially seem complex, this design is justified:
 
 ## Next Steps
 
-### Phase 0: Research (to be documented in research.md)
-1. Compare LLM frameworks (LangChain vs. LlamaIndex vs. plain API calls)
-2. Evaluate LLM providers (OpenAI GPT-4 vs. Anthropic Claude vs. open-source models)
-3. Research prompt engineering best practices for structured output
-4. Investigate output parsing libraries and validation approaches
-5. Review mathematical validation techniques
+### ✅ Phase 0: Research (COMPLETED - see research.md)
 
-### Phase 1: Design (to be documented in data-model.md, contracts/, quickstart.md)
-1. Design database schema for all entities
-2. Define agent input/output contracts (exact JSON/text formats)
-3. Design orchestration workflow with state machine diagram
-4. Create quickstart guide with example workflows
-5. Define configuration schema (quality threshold, escalation dimensions, etc.)
+**研究結論** (詳見 [research.md](./research.md))：
 
-### Phase 2: Implementation (to be documented in tasks.md)
+**確定技術棧**：
+- **Agent 框架**: CrewAI (MIT, 角色明確、API 簡潔)
+- **OCR**: PaddleOCR (Apache 2.0, 中文優秀、CPU 可用、支援 LaTeX)
+- **LLM**: OpenAI GPT-4.1 (GPT-4o/GPT-4 Turbo, 題目品質優先)
+- **數據庫**: PostgreSQL (生產), SQLite (開發)
+- **API 框架**: FastAPI
+
+**關鍵決策**：
+1. **Agent 框架**: 選擇 CrewAI 而非 AutoAgent/LangGraph
+   - AutoAgent: 零代碼框架，不適合精確控制迭代邏輯
+   - LangGraph: 功能強大但學習曲線陡峭，MVP 過度設計
+   - CrewAI: 最佳平衡（簡單、角色明確、符合需求）
+
+2. **OCR 技術**: 選擇 PaddleOCR 而非 DeepSeek OCR
+   - PaddleOCR: 96-98% 中文準確度，CPU 可運行，部署簡單
+   - DeepSeek OCR: 需 A100-40G GPU，MVP 成本過高（生產階段可考慮）
+
+3. **LLM 選擇**: GPT-4.1 而非 DeepSeek-V3
+   - 原因：**題目品質決定教育價值**，這是系統核心價值
+   - 成本：每題 ~$0.05 (¥0.35)，每月 100 題/天約 $150
+   - 權衡：品質優先 > 成本優化（符合憲章 Principle 1）
+
+4. **開源原則遵循**：
+   - Agent 框架 ✅ 開源 (CrewAI - MIT)
+   - OCR ✅ 開源 (PaddleOCR - Apache 2.0)
+   - LLM ⚠️ 商業 API（教育品質優先，權衡後接受）
+
+**備選方案**：
+- 若 GPT-4.1 成本超出預算 → 降級至 DeepSeek-V3
+- 若 PaddleOCR 準確度不足 → 升級至 DeepSeek OCR（需 GPU）
+- 若 CrewAI 迭代控制複雜 → 遷移至 LangGraph
+
+### 🔄 Phase 1: Design (IN PROGRESS - to be documented in data-model.md, contracts/, quickstart.md)
+
+**待完成任務**：
+1. ✅ 更新 `spec.md` - 加入照片上傳需求 (User Story 0)
+2. ✅ 更新 `data-model.md` - 加入 UploadedImage 實體
+3. ✅ 創建 `contracts/image-extraction-agent.md` - OCR 合約
+4. ✅ 更新所有 Agent contracts - 改為繁體中文
+5. 🔄 設計 OCR → Agent 流程的狀態機
+6. 🔄 創建 quickstart guide - 含照片上傳範例
+7. 🔄 定義配置 schema - 加入 OCR 設定
+
+### ⏭️ Phase 2: Implementation (to be documented in tasks.md)
 - Generated by `/speckit.tasks` command
 - Will include task breakdown by user story
-- Organized for incremental delivery (P1 → P2 → P3)
+- Organized for incremental delivery (P0: OCR → P1: Agents → P2: Solution → P3: Config)
