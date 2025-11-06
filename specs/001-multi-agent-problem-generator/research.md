@@ -26,7 +26,7 @@
 
 ### 憲章原則
 - 🔓 **Principle 8**: 優先選擇開源技術
-- 🇹🇼 **Principle 7**: 中文優先（文檔、社群支援）
+- 🇹🇼 **Principle 7**: 規格文檔使用繁體中文
 - 🧪 **Principle 4**: 可測試性（清晰的 API、可模擬）
 - 🔧 **Principle 5**: 簡單性和可維護性
 
@@ -38,16 +38,77 @@
 
 根據憲章 Principle 8（開源優先）和用戶需求，評估以下框架：
 
-1. **AutoGen** (Microsoft, 開源)
+1. **AutoAgent** (HKUDS, 開源 - 零代碼框架)
 2. **CrewAI** (開源)
 3. **LangGraph** (LangChain ecosystem, 開源)
-4. **Pydantic AI** (開源, 新興)
-5. **OpenAI Swarm** (開源實驗性 SDK)
-6. **Microsoft Agent Framework** (商業)
+4. **AutoGen** (Microsoft, 開源 - 僅作參考)
+5. **Pydantic AI** (開源, 新興)
+6. **OpenAI Swarm** (開源實驗性 SDK)
 
 ---
 
-### 1. AutoGen (Microsoft)
+### 1. AutoAgent (HKUDS)
+
+**官網**: https://github.com/HKUDS/AutoAgent
+**GitHub**: https://github.com/HKUDS/AutoAgent (⭐ 7.7k stars)
+**授權**: MIT (開源)
+
+#### 簡介
+香港大學數據科學實驗室開發的零代碼 Agent 框架，核心特點是**通過自然語言對話創建 AI Agent**，無需編程知識。
+
+#### 優點
+- ✅ **開源**: MIT 授權，符合 Principle 8
+- ✅ **零代碼**: 通過自然語言定義 Agent 和工作流
+- ✅ **多 LLM 支援**: Claude, OpenAI, DeepSeek, Gemini 等
+- ✅ **三種模式**: User Mode（現成系統）、Agent Editor、Workflow Editor
+- ✅ **自動工作流生成**: 自動優化和資源編排
+
+#### 缺點
+- ❌ **非可編程框架**: 設計給非程序員使用，不適合需要精確控制的場景
+- ❌ **缺少循環控制**: 無法精確控制 Review→Revise 迭代邏輯
+- ❌ **抽象層次過高**: 對於我們需要的精細控制（評分閾值、最大迭代次數）不夠靈活
+- ⚠️ **較新**: 2025年2月才 v0.2.0，成熟度相對較低
+
+#### 與我們需求的匹配度
+
+| 需求 | 匹配度 | 說明 |
+|------|--------|------|
+| 4 個專門代理協調 | ⭐⭐⭐ | 可透過 Workflow Editor 定義，但不夠靈活 |
+| 迭代循環管理 | ⭐ | 無法精確控制循環條件（評分 ≥4.5）和次數 |
+| 結構化輸出解析 | ⭐⭐ | 需要依賴自動生成，不可控 |
+| 錯誤處理 | ⭐⭐ | 自動處理，但不透明 |
+| 可觀察性 | ⭐⭐ | 對於開發者來說黑盒程度較高 |
+| 簡單性 | ⭐⭐⭐⭐⭐ | 對**非程序員**極簡，但對**開發者**反而受限 |
+
+#### 程式碼範例
+
+```bash
+# 啟動 AutoAgent
+auto main
+
+# 通過自然語言對話創建 Agent
+用戶: "我需要一個數學問題改寫 Agent"
+AutoAgent: "好的，這個 Agent 的具體功能是什麼？"
+用戶: "分析原問題的數學領域，然後提升難度..."
+# ... 繼續對話式定義
+```
+
+**注意**: AutoAgent 的核心設計是**零代碼**，適合非技術用戶。但我們的場景需要：
+- 精確控制迭代邏輯（`while score < 4.5 and iterations < 5`）
+- 結構化輸出解析（`###thought###`, `###rating_score###`）
+- 數據庫持久化和追蹤
+- 可測試的 API
+
+這些都需要**可編程的框架**，而非零代碼框架。
+
+#### 決策建議
+- ❌ **不推薦**：設計哲學與我們需求不匹配
+- ⚠️ **適合場景**：快速原型、非技術用戶、探索性項目
+- ✅ **啟發意義**：對話式 Agent 定義是有趣的 UI 方向，但不適合核心引擎
+
+---
+
+### 2. AutoGen (Microsoft)
 
 **官網**: https://microsoft.github.io/autogen/
 **GitHub**: https://github.com/microsoft/autogen
@@ -55,6 +116,8 @@
 
 #### 簡介
 Microsoft 開源的多代理對話框架，專注於代理間對話和協作。
+
+**注意**: 此為參考框架，不是用戶要求評估的 "AutoAgent (HKUDS)"。
 
 #### 優點
 - ✅ **開源**: Apache 2.0 授權，符合 Principle 8
@@ -66,7 +129,6 @@ Microsoft 開源的多代理對話框架，專注於代理間對話和協作。
 - ✅ **文檔完整**: 詳細文檔和範例
 
 #### 缺點
-- ❌ **中文文檔有限**: 主要英文文檔
 - ⚠️ **學習曲線**: 概念較新，需要理解對話模式
 - ❌ **狀態管理**: 需要自行實現複雜狀態持久化
 - ⚠️ **重量級**: 功能豐富但可能過於複雜
@@ -80,7 +142,6 @@ Microsoft 開源的多代理對話框架，專注於代理間對話和協作。
 | 結構化輸出解析 | ⭐⭐⭐ | 需要自行實現解析器 |
 | 錯誤處理 | ⭐⭐⭐ | 基本支援，可擴展 |
 | 可觀察性 | ⭐⭐⭐⭐ | 良好的日誌和追蹤 |
-| 中文支援 | ⭐⭐⭐ | LLM 支援中文，框架無關語言 |
 | 簡單性 | ⭐⭐ | 概念豐富，需要較多學習 |
 
 #### 程式碼範例
@@ -126,7 +187,7 @@ user_proxy.initiate_chat(
 
 ---
 
-### 2. CrewAI
+### 3. CrewAI
 
 **官網**: https://www.crewai.com/
 **GitHub**: https://github.com/joaomdmoura/crewAI
@@ -144,7 +205,6 @@ user_proxy.initiate_chat(
 - ✅ **快速成長**: 社群活躍，更新快速
 
 #### 缺點
-- ❌ **中文文檔缺乏**: 主要英文
 - ⚠️ **較新框架**: 成熟度不如 LangChain/AutoGen
 - ❌ **狀態管理弱**: 缺少內建狀態持久化
 - ⚠️ **可觀察性一般**: 追蹤功能基本
@@ -158,7 +218,6 @@ user_proxy.initiate_chat(
 | 結構化輸出解析 | ⭐⭐⭐ | 需要自行實現 |
 | 錯誤處理 | ⭐⭐ | 基本功能，需要擴展 |
 | 可觀察性 | ⭐⭐ | 基本日誌，需要自行增強 |
-| 中文支援 | ⭐⭐⭐ | LLM 層面支援 |
 | 簡單性 | ⭐⭐⭐⭐⭐ | 最簡單的 API，符合 Principle 5 |
 
 #### 程式碼範例
@@ -212,7 +271,7 @@ result = crew.kickoff(inputs={"original_problem": "2x + 3 = 11"})
 
 ---
 
-### 3. LangGraph (LangChain)
+### 4. LangGraph (LangChain)
 
 **官網**: https://langchain-ai.github.io/langgraph/
 **GitHub**: https://github.com/langchain-ai/langgraph
@@ -231,7 +290,6 @@ LangChain 生態系統的一部分，使用有向圖（Graph）來定義 Agent �
 
 #### 缺點
 - ❌ **複雜度高**: 需要理解圖概念，學習曲線陡峭
-- ❌ **中文文檔有限**: 主要英文
 - ⚠️ **重量級**: 依賴 LangChain 整個生態
 - ⚠️ **抽象層次高**: 可能過於抽象，不夠直觀
 
@@ -244,7 +302,6 @@ LangChain 生態系統的一部分，使用有向圖（Graph）來定義 Agent �
 | 結構化輸出解析 | ⭐⭐⭐⭐ | LangChain 有豐富解析器 |
 | 錯誤處理 | ⭐⭐⭐⭐ | 檢查點和狀態恢復 |
 | 可觀察性 | ⭐⭐⭐⭐ | LangSmith 追蹤集成 |
-| 中文支援 | ⭐⭐⭐ | LLM 層面支援 |
 | 簡單性 | ⭐⭐ | 概念複雜，不符合 Principle 5 |
 
 #### 程式碼範例
@@ -311,7 +368,7 @@ app = workflow.compile()
 
 ---
 
-### 4. Pydantic AI
+### 5. Pydantic AI
 
 **官網**: https://ai.pydantic.dev/
 **GitHub**: https://github.com/pydantic/pydantic-ai
@@ -331,7 +388,6 @@ Pydantic 團隊開發的新 Agent 框架，強調類型安全和結構化輸出�
 - ❌ **非常新**: 2024 年底剛發布，成熟度低
 - ❌ **多代理支援弱**: 主要單代理場景
 - ❌ **社群小**: 文檔和範例較少
-- ❌ **中文資源無**: 剛起步，無中文文檔
 
 #### 與我們需求的匹配度
 
@@ -342,7 +398,6 @@ Pydantic 團隊開發的新 Agent 框架，強調類型安全和結構化輸出�
 | 結構化輸出解析 | ⭐⭐⭐⭐⭐ | 這是其強項 |
 | 錯誤處理 | ⭐⭐⭐ | Pydantic 驗證提供部分支援 |
 | 可觀察性 | ⭐⭐ | 基本功能 |
-| 中文支援 | ⭐⭐⭐ | LLM 層面支援 |
 | 簡單性 | ⭐⭐⭐⭐ | API 簡潔 |
 
 #### 程式碼範例
@@ -376,7 +431,7 @@ print(result.data.stage3_rewritten)
 
 ---
 
-### 5. OpenAI Swarm
+### 6. OpenAI Swarm
 
 **官網**: https://github.com/openai/swarm
 **GitHub**: https://github.com/openai/swarm
@@ -395,7 +450,6 @@ OpenAI 的實驗性多代理框架，強調輕量級和代理切換（Handoff）
 - ❌ **實驗性**: 明確標註為實驗，不建議生產
 - ❌ **功能有限**: 缺少狀態管理、持久化
 - ❌ **僅支援 OpenAI**: 鎖定 OpenAI API
-- ❌ **中文文檔無**: 極少文檔
 
 #### 與我們需求的匹配度
 
@@ -406,7 +460,6 @@ OpenAI 的實驗性多代理框架，強調輕量級和代理切換（Handoff）
 | 結構化輸出解析 | ⭐⭐ | 需要自行實現 |
 | 錯誤處理 | ⭐ | 基本功能 |
 | 可觀察性 | ⭐ | 極少追蹤 |
-| 中文支援 | ⭐⭐⭐ | LLM 層面支援 |
 | 簡單性 | ⭐⭐⭐⭐⭐ | 最簡單，但功能不足 |
 
 #### 決策建議
@@ -416,7 +469,7 @@ OpenAI 的實驗性多代理框架，強調輕量級和代理切換（Handoff）
 
 ---
 
-### 6. Microsoft Agent Framework
+### 7. Microsoft Agent Framework
 
 **官網**: https://learn.microsoft.com/en-us/microsoft-cloud/dev/copilot/agent-framework
 **類型**: 商業框架
@@ -433,7 +486,6 @@ Microsoft 的商業 Agent 框架，集成 Azure AI 服務。
 - ❌ **非開源**: 違反 Principle 8
 - ❌ **成本高**: Azure 服務費用
 - ❌ **鎖定 Azure**: 難以遷移
-- ❌ **中文文檔有限**: 主要英文
 
 #### 決策建議
 - ❌ **不推薦**：違反開源原則（Principle 8）
@@ -443,14 +495,15 @@ Microsoft 的商業 Agent 框架，集成 Azure AI 服務。
 
 ### Agent 框架比較總表
 
-| 框架 | 開源 | 多代理 | 循環控制 | 狀態管理 | 簡單性 | 中文文檔 | 推薦度 |
-|------|------|--------|----------|----------|--------|----------|--------|
-| **CrewAI** | ✅ MIT | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ❌ | 🥇 **MVP首選** |
-| **LangGraph** | ✅ MIT | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | ❌ | 🥈 **進階選擇** |
-| **AutoGen** | ✅ Apache | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⚠️ | 🥉 **對話場景** |
-| **Pydantic AI** | ✅ MIT | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ❌ | ⏳ **未來考慮** |
-| **OpenAI Swarm** | ✅ MIT | ⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ❌ | ⚠️ **實驗性** |
-| **MS Framework** | ❌ 商業 | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⚠️ | ❌ **違反原則** |
+| 框架 | 開源 | 多代理 | 循環控制 | 狀態管理 | 簡單性 | 推薦度 |
+|------|------|--------|----------|----------|--------|--------|
+| **AutoAgent** | ✅ MIT | ⭐⭐⭐ | ⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ❌ **零代碼框架** |
+| **AutoGen** | ✅ Apache | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | 🥉 **對話場景** |
+| **CrewAI** | ✅ MIT | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | 🥇 **MVP首選** |
+| **LangGraph** | ✅ MIT | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐ | 🥈 **進階選擇** |
+| **Pydantic AI** | ✅ MIT | ⭐⭐ | ⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐ | ⏳ **未來考慮** |
+| **OpenAI Swarm** | ✅ MIT | ⭐⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ | ⚠️ **實驗性** |
+| **MS Framework** | ❌ 商業 | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ❌ **違反原則** |
 
 ---
 
@@ -592,27 +645,71 @@ result = ocr.ocr('math_problem.jpg', cls=True)
 
 ### 2. DeepSeek OCR
 
-**狀態**: 🔍 需要驗證是否存在開源版本
+**官網**: https://github.com/deepseek-ai/DeepSeek-OCR
+**GitHub**: https://github.com/deepseek-ai/DeepSeek-OCR (⭐ 19.7k stars)
+**授權**: MIT (開源)
 
-#### 調查結果
-經查詢，**DeepSeek** 主要是 LLM 模型提供商，尚未發現公開的 "DeepSeek OCR" 開源項目。
+#### 簡介
+DeepSeek 開源的視覺-文本壓縮模型（Janus-Pro-7B），專門用於從圖片中提取文字內容並轉換為 Markdown 格式，特別優化圖表、表格和複雜排版識別。
 
-**可能情況**：
-1. 內部使用但未開源
-2. 用戶指的是 DeepSeek 的視覺模型（Vision Model）
-3. 與其他 OCR 方案混淆
+#### 優點
+- ✅ **開源**: MIT 授權，符合 Principle 8
+- ✅ **極高性能**: 2500 tokens/s 推理速度
+- ✅ **中文優秀**: 原生支援中文（繁體/簡體）
+- ✅ **數學公式**: 支援 LaTeX 公式識別
+- ✅ **圖表解析**: 可識別圖表、表格結構
+- ✅ **文檔轉換**: 直接輸出結構化 Markdown
+- ✅ **多模態**: 基於視覺語言模型，理解能力強
 
-#### 替代方案：DeepSeek-VL (視覺語言模型)
-如果指的是視覺理解能力：
-- **DeepSeek-VL**: 開源的視覺語言模型
-- **用途**: 圖片理解、描述生成
-- **優點**: 可以"看懂"圖片中的數學問題
-- **缺點**: 不是專門 OCR，且模型很大（需要高階 GPU）
+#### 缺點
+- ❌ **硬體要求極高**: 需要 A100-40G GPU（成本高）
+- ❌ **部署複雜**: 模型大（7B 參數），部署難度高
+- ⚠️ **資源消耗大**: 記憶體需求 ~40GB
+- ⚠️ **較新**: 2025年初發布，成熟度相對較低
+
+#### 技術規格
+
+```python
+# 安裝
+git clone https://github.com/deepseek-ai/DeepSeek-OCR.git
+cd DeepSeek-OCR
+pip install -e .
+
+# 使用（需要 A100-40G）
+from deepseek_ocr import DeepSeekOCR
+
+ocr = DeepSeekOCR(model_name="deepseek-ai/Janus-Pro-7B")
+result = ocr.extract_text("math_problem.jpg")
+
+# 輸出格式：結構化 Markdown
+# 包含標題、段落、公式、表格等
+```
+
+#### 性能指標
+- **推理速度**: 2500 tokens/s（A100-40G）
+- **準確度**: 極高（基於 VLM，理解上下文）
+- **支援格式**: 圖片 → Markdown（含 LaTeX）
+- **GPU 需求**: A100-40G（必需）
+- **模型大小**: ~14GB（7B 參數模型）
+
+#### 與 PaddleOCR 比較
+
+| 特性 | DeepSeek OCR | PaddleOCR |
+|------|-------------|-----------|
+| **準確度** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **速度** | ⭐⭐⭐⭐⭐ (2500 tokens/s) | ⭐⭐⭐ (2-3s/圖) |
+| **GPU 需求** | ❌ A100-40G 必需 | ✅ 可選（CPU 可用） |
+| **部署難度** | ❌ 極高 | ✅ 簡單 |
+| **輸出格式** | ✅ Markdown | ⚠️ 純文字+座標 |
+| **圖表理解** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| **成本** | ❌ 極高（GPU租用） | ✅ 低 |
+| **MVP 適用** | ❌ | ✅ |
 
 #### 決策建議
-- ⚠️ **需要澄清**：用戶具體指的是什麼產品
-- 📝 **建議**：如無法確認開源 DeepSeek OCR，使用 PaddleOCR
-- 🔄 **備選**：使用 PaddleOCR + DeepSeek-LLM（處理複雜情況）
+- ❌ **不推薦 MVP**：硬體需求過高（A100-40G），部署成本極大
+- ⚠️ **生產階段考慮**：如果有 GPU 資源且需要最高準確度
+- ✅ **啟發意義**：VLM 方法代表未來方向，但現階段不實用
+- 📝 **實際建議**：MVP 使用 PaddleOCR（CPU 可運行），未來如有預算可升級 DeepSeek OCR
 
 ---
 
@@ -700,13 +797,13 @@ Google 開源的老牌 OCR 引擎，支援 100+ 語言。
 
 ### OCR 技術比較總表
 
-| 方案 | 開源 | 中文準確度 | 手寫支援 | 數學符號 | 圖表處理 | 部署難度 | 推薦度 |
-|------|------|-----------|---------|---------|---------|---------|--------|
-| **PaddleOCR** | ✅ Apache | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ | 🥇 **首選** |
-| **DeepSeek OCR** | ❓ 未知 | ❓ | ❓ | ❓ | ❓ | ❓ | ❓ **需驗證** |
-| **Tesseract** | ✅ Apache | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ⚠️ **備選** |
-| **RapidOCR** | ✅ Apache | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐ **簡化版** |
-| **商業 API** | ❌ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ❌ **違反原則** |
+| 方案 | 開源 | 中文準確度 | 手寫支援 | 數學符號 | 圖表處理 | 部署難度 | GPU需求 | 推薦度 |
+|------|------|-----------|---------|---------|---------|---------|---------|--------|
+| **PaddleOCR** | ✅ Apache | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ✅ 可選 | 🥇 **MVP首選** |
+| **DeepSeek OCR** | ✅ MIT | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐ | ❌ A100-40G | ⚠️ **生產考慮** |
+| **Tesseract** | ✅ Apache | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐ | ⭐⭐ | ⭐⭐⭐⭐⭐ | ✅ 不需要 | ⚠️ **備選** |
+| **RapidOCR** | ✅ Apache | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐⭐⭐ | ✅ 可選 | ⭐ **簡化版** |
+| **商業 API** | ❌ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ✅ 不需要 | ❌ **違反原則** |
 
 ---
 
@@ -738,37 +835,43 @@ text_lines = [line[1][0] for line in result[0]]
 full_text = '\n'.join(text_lines)
 ```
 
-#### ❓ 需要驗證：DeepSeek OCR
+#### ⚠️ DeepSeek OCR 評估結論
 
-**行動項目**：
-1. 🔍 確認是否存在 "DeepSeek OCR" 開源項目
-2. 📧 可能需要聯繫用戶澄清具體產品
-3. 🔄 如果不存在，繼續使用 PaddleOCR
+**存在狀態**: ✅ 已確認開源（MIT, 19.7k stars）
+**核心問題**: ❌ 需要 A100-40G GPU，MVP 階段不實用
+**長期價值**: ✅ 代表 VLM-based OCR 未來方向
+
+**對比分析**：
+- **準確度**: DeepSeek OCR > PaddleOCR（但差距不大，都能滿足需求）
+- **部署成本**: DeepSeek OCR >>> PaddleOCR（A100 vs 普通 CPU/GPU）
+- **實用性**: PaddleOCR 完勝（MVP 可立即使用）
 
 #### 📊 決策流程
 
 ```
-開始
+MVP 階段（立即）
   ↓
-驗證 DeepSeek OCR 是否存在且開源？
-  ↓ 否
-使用 PaddleOCR (首選)
+使用 PaddleOCR (CPU/輕量 GPU)
   ↓
-測試 PaddleOCR 準確度
+測試中文數學題目準確度
   ↓
 準確度 ≥ 85%？
   ↓ 是
-採用 PaddleOCR
+採用 PaddleOCR 完成 MVP
   ↓
-完成
+進入生產
 
-  ↓ 否
-手寫識別是否是主要問題？
-  ↓ 是
-考慮 PaddleOCR 手寫模型 +
-商業 API 備選方案
+生產階段（優化）
   ↓
-重新測試
+評估是否有 A100-40G 資源？
+  ↓ 是
+測試 DeepSeek OCR 性能提升
+  ↓
+提升 ≥ 10% 且成本可接受？
+  ↓ 是
+遷移到 DeepSeek OCR
+  ↓ 否
+繼續使用 PaddleOCR
 ```
 
 ---
