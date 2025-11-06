@@ -1,22 +1,26 @@
 <!--
 Sync Impact Report:
-- Version: Initial creation → 1.0.0
-- Ratification Date: 2025-11-06
-- Modified Principles: N/A (initial creation)
-- Added Sections: All initial sections
+- Version: 1.0.0 → 1.1.0
+- Last Amended: 2025-11-06
+- Modified Principles:
+  * Added Principle 7: Chinese-First Documentation
+  * Added Principle 8: Open Source Technology Preference
+- Added Sections: Language Policy, Technology Selection Guidelines
 - Removed Sections: None
 - Templates Status:
   ✅ plan-template.md - aligned with constitution
   ✅ spec-template.md - aligned with constitution
   ✅ tasks-template.md - aligned with constitution
-- Follow-up TODOs: None
+- Follow-up TODOs:
+  * Update all future specifications to use Traditional Chinese
+  * Evaluate open-source OCR solutions (DeepSeek OCR, PaddleOCR)
 -->
 
-# AgenticMath Project Constitution
+# AgenticMath 專案憲章
 
-**Version**: 1.0.0
-**Ratified**: 2025-11-06
-**Last Amended**: 2025-11-06
+**版本**: 1.1.0
+**批准日期**: 2025-11-06
+**最後修訂**: 2025-11-06
 
 ## Purpose
 
@@ -96,6 +100,169 @@ AgenticMath is an intelligent agent system designed to generate high-quality mat
 - Generation parameters and their effects MUST be understandable by educators
 - System behavior MUST be reproducible for debugging and improvement
 
+### Principle 7: Chinese-First Documentation
+
+**Statement**: All project documentation, specifications, user interfaces, and communications MUST be written in Traditional Chinese as the primary language. English may be used as a secondary reference language for technical terms or external library documentation.
+
+**Rationale**: The target users are Chinese-speaking students and educators. Chinese-first documentation ensures clarity, accessibility, and cultural relevance. This reduces cognitive load for users and developers, enabling better understanding of educational context and pedagogical nuances that may be lost in translation.
+
+**Rules**:
+- All specifications (spec.md, plan.md, data-model.md, etc.) MUST be written in Traditional Chinese
+- User-facing content (UI text, error messages, help documentation) MUST be in Traditional Chinese
+- Code comments SHOULD be in Traditional Chinese where possible, English acceptable for technical clarity
+- Variable and function names SHOULD use English for code compatibility and conventions
+- Technical terms without clear Chinese equivalents MAY retain English with Chinese explanation
+- Commit messages SHOULD be in Traditional Chinese with English summary for international contributors
+- Mathematical notation and formulas use international standards (language-agnostic)
+
+### Principle 8: Open Source Technology Preference
+
+**Statement**: The system SHOULD prefer open-source solutions over proprietary alternatives when functionality, reliability, and maintainability are comparable. This applies especially to core dependencies and infrastructure components.
+
+**Rationale**: Open-source technologies provide transparency, community support, cost-effectiveness, and freedom from vendor lock-in. For educational software, open-source aligns with knowledge-sharing values and enables customization for specific pedagogical needs. It also ensures long-term sustainability and allows for community contributions.
+
+**Rules**:
+- Core technologies (OCR, agent frameworks, databases) SHOULD be open-source when suitable
+- Proprietary solutions MAY be used when open-source alternatives lack critical features or maturity
+- Technology selection MUST document comparison between open-source and proprietary options
+- Cost-benefit analysis MUST consider total cost of ownership (licensing, support, maintenance)
+- Open-source solutions MUST be evaluated for:
+  * Active maintenance and community support
+  * Documentation quality (especially Chinese documentation)
+  * Performance and scalability characteristics
+  * Integration complexity and learning curve
+- For OCR specifically: Evaluate DeepSeek OCR, PaddleOCR, Tesseract before considering commercial APIs
+- For agent frameworks: Evaluate open-source options (AutoGen, CrewAI) before proprietary SDKs
+
+## Language Policy
+
+### Documentation Languages
+
+**Primary Language**: Traditional Chinese (繁體中文)
+- All specifications, design documents, user documentation
+- User interface text, error messages, help content
+- Internal communications, meeting notes, decision records
+
+**Secondary Language**: English
+- Technical terms without clear Chinese equivalents (with Chinese explanation)
+- References to external libraries and frameworks
+- International collaboration and open-source contributions
+- Variable/function names for code compatibility
+
+### Code Language Conventions
+
+```python
+# ✅ Recommended: English names with Chinese comments
+class ProblemRephraser:
+    """問題改寫器 - 將原始問題轉換為高難度版本"""
+
+    def rephrase(self, original_problem: str) -> str:
+        """改寫問題
+
+        Args:
+            original_problem: 原始問題文字
+
+        Returns:
+            改寫後的問題文字
+        """
+        # 識別數學領域
+        domain = self._identify_domain(original_problem)
+
+        # 應用升級策略
+        escalated = self._apply_escalation(original_problem, domain)
+
+        return escalated
+```
+
+### Documentation Structure
+
+- **規格文件 (Specifications)**: 100% Traditional Chinese
+- **技術文件 (Technical Docs)**: Traditional Chinese with English technical terms in parentheses
+- **API 文件 (API Docs)**: Bilingual - Chinese descriptions with English code examples
+- **README**: Traditional Chinese with English summary section
+
+## Technology Selection Guidelines
+
+### Evaluation Criteria
+
+When choosing between technologies, evaluate in this order:
+
+1. **功能完整性 (Functional Completeness)**
+   - Does it meet all requirements?
+   - Are there critical missing features?
+
+2. **開源優先 (Open Source Priority)**
+   - Open source preferred over proprietary (Principle 8)
+   - Consider license compatibility (MIT, Apache 2.0 preferred)
+
+3. **社群支援 (Community Support)**
+   - Active development and maintenance?
+   - Chinese language documentation and community?
+   - Issue response time and community size?
+
+4. **效能與擴展性 (Performance & Scalability)**
+   - Meets performance requirements?
+   - Scales to expected user load?
+
+5. **整合複雜度 (Integration Complexity)**
+   - Learning curve for team?
+   - Integration effort with existing stack?
+   - Quality of documentation and examples?
+
+6. **總體擁有成本 (Total Cost of Ownership)**
+   - Licensing costs (if proprietary)
+   - Hosting and infrastructure costs
+   - Maintenance and support costs
+   - Training and onboarding costs
+
+### OCR Technology Selection (Specific Guidance)
+
+For photo-to-text extraction, evaluate in this order:
+
+1. **開源 OCR 解決方案 (Open Source OCR)**:
+   - **PaddleOCR** (Baidu, 百度飛槳OCR)
+     * Pros: Excellent Chinese support, multiple models, active development, good documentation
+     * Cons: Requires GPU for best performance, model size large
+   - **DeepSeek OCR** (if available as open source)
+     * Pros: Potentially better accuracy, modern architecture
+     * Cons: Evaluate availability, documentation, community support
+   - **Tesseract OCR** (Google)
+     * Pros: Mature, widely used, multi-language
+     * Cons: Lower accuracy for handwriting, older technology
+
+2. **商業 OCR API (Commercial OCR APIs)** - Only if open source insufficient:
+   - Google Cloud Vision API
+   - Azure Computer Vision
+   - Alibaba Cloud OCR (阿里雲文字識別)
+
+**決策流程 (Decision Flow)**:
+1. 測試 PaddleOCR 準確度 (Test PaddleOCR accuracy)
+2. 如果手寫識別不足，測試 DeepSeek OCR (If handwriting insufficient, test DeepSeek)
+3. 如果準確度仍 <80%，考慮商業 API (If accuracy still <80%, consider commercial)
+4. 記錄決策理由和測試結果 (Document decision rationale and test results)
+
+### Agent Framework Selection (Specific Guidance)
+
+For multi-agent orchestration, evaluate:
+
+1. **開源 Agent 框架 (Open Source Frameworks)**:
+   - **AutoGen** (Microsoft, but open source)
+   - **CrewAI**
+   - **LangGraph** (LangChain ecosystem)
+   - **Pydantic AI**
+
+2. **商業 Agent SDK (Commercial SDKs)**:
+   - OpenAI Agent SDK (Swarm)
+   - Microsoft Agent Framework
+   - Anthropic SDK (minimal agent support)
+
+**評估重點 (Evaluation Focus)**:
+- 多代理協調能力 (Multi-agent coordination)
+- 狀態管理 (State management)
+- 錯誤處理和重試 (Error handling and retry)
+- 可觀察性 (Observability/tracing)
+- 中文文檔品質 (Chinese documentation quality)
+
 ## Governance
 
 ### Amendment Procedure
@@ -153,7 +320,9 @@ Before finalizing any design, ask:
 - Can we automatically verify this works correctly? (Principle 4)
 - Is this the simplest approach that could work? (Principle 5)
 - Can we explain why the system behaves this way? (Principle 6)
+- Is documentation in Traditional Chinese with clear technical terms? (Principle 7)
+- Have we evaluated open-source alternatives? (Principle 8)
 
 ---
 
-**End of Constitution**
+**憲章結束 (End of Constitution)**
