@@ -8,11 +8,22 @@ AgenticMath helps students improve their mathematical understanding by generatin
 
 ## Core Features
 
+- **Photo Upload & OCR**: Students can upload photos of math problems (printed or handwritten)
 - **Problem Upload**: Students submit math problems they struggle with
 - **Conceptual Analysis**: System identifies the underlying mathematical concepts
 - **Problem Generation**: Creates similar problems that target the same concepts
+- **Quality Control Loop**: Automated review and revision until quality threshold is met
+- **Solution Generation**: Detailed step-by-step solutions with chain-of-thought reasoning
 - **Learning Support**: Generated problems help students discover patterns and strategies
 - **Quality Assurance**: All problems are mathematically correct and pedagogically effective
+
+## Technical Stack
+
+- **Agent Framework**: CrewAI (MIT licensed, role-based multi-agent orchestration)
+- **LLM**: OpenAI GPT-4.1 (GPT-4o/GPT-4 Turbo) for optimal math problem quality
+- **OCR**: PaddleOCR 2.7.0 (Apache 2.0, Traditional Chinese support)
+- **Database**: SQLAlchemy 2.0+ with SQLite (dev) or PostgreSQL (production)
+- **Language**: Python 3.11+
 
 ## Project Principles
 
@@ -38,17 +49,40 @@ AgenticMath/
 │       ├── plan-template.md     # Implementation plan template
 │       ├── spec-template.md     # Feature specification template
 │       └── tasks-template.md    # Task list template
-├── specs/                       # Feature specifications (created per feature)
-│   └── [###-feature-name]/
+├── specs/                       # Feature specifications
+│   └── 001-multi-agent-problem-generator/
 │       ├── spec.md             # Feature specification
 │       ├── plan.md             # Implementation plan
 │       ├── research.md         # Research findings
 │       ├── data-model.md       # Data models
 │       ├── quickstart.md       # Getting started guide
-│       ├── contracts/          # API contracts
+│       ├── workflow-state-machine.md  # State machine definition
+│       ├── config-schema.md    # Configuration schema
+│       ├── contracts/          # Agent contracts
+│       │   ├── image-extraction-agent.md
+│       │   ├── rephrase-agent.md
+│       │   ├── review-agent.md
+│       │   ├── revise-agent.md
+│       │   └── solver-agent.md
 │       └── tasks.md            # Implementation tasks
-├── src/                        # Source code (to be created)
-└── tests/                      # Test suites (to be created)
+├── src/                        # Source code
+│   ├── agents/                 # Agent implementations
+│   ├── models/                 # Pydantic data models
+│   ├── ocr/                    # OCR and image processing
+│   ├── storage/                # Database and repositories
+│   ├── orchestration/          # Pipeline and workflow
+│   ├── config/                 # Configuration management
+│   ├── cli/                    # Command-line interface
+│   └── api/                    # REST API (optional)
+├── tests/                      # Test suites
+│   ├── unit/                   # Unit tests
+│   ├── integration/            # Integration tests
+│   └── e2e/                    # End-to-end tests
+├── logs/                       # Application logs
+├── uploads/                    # Uploaded photos
+├── pyproject.toml              # Project configuration
+├── requirements.txt            # Python dependencies
+└── .env.example               # Environment variables template
 ```
 
 ## Development Workflow
@@ -88,7 +122,88 @@ To start developing features:
 
 ## Getting Started
 
-*This section will be populated once the first feature is implemented.*
+### Prerequisites
+
+- Python 3.11 or higher
+- Git
+- OpenAI API key
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-org/AgenticMath.git
+   cd AgenticMath
+   ```
+
+2. **Create virtual environment**:
+   ```bash
+   python3.11 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env and add your OpenAI API key
+   ```
+
+5. **Initialize database**:
+   ```bash
+   alembic upgrade head
+   ```
+
+### Quick Start
+
+#### Process a photo of a math problem:
+```bash
+python -m src.cli.main process-photo ./examples/math_problem.jpg
+```
+
+#### Process text directly:
+```bash
+python -m src.cli.main process "Solve for x: 2x + 3 = 11"
+```
+
+#### Check OCR result only:
+```bash
+python -m src.cli.main ocr ./examples/math_problem.jpg
+```
+
+For detailed usage instructions, see [specs/001-multi-agent-problem-generator/quickstart.md](specs/001-multi-agent-problem-generator/quickstart.md).
+
+### Configuration
+
+All configuration is done through environment variables in `.env`:
+
+- **LLM Settings**: `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_TEMPERATURE`
+- **OCR Settings**: `OCR_LANGUAGE`, `OCR_CONFIDENCE_THRESHOLD`, `OCR_USE_GPU`
+- **Quality Control**: `QUALITY_THRESHOLD`, `MAX_REVISE_ITERATIONS`
+
+See [specs/001-multi-agent-problem-generator/config-schema.md](specs/001-multi-agent-problem-generator/config-schema.md) for full configuration reference.
+
+### Development
+
+#### Running tests:
+```bash
+pytest tests/
+```
+
+#### Code formatting:
+```bash
+black src/ tests/
+ruff check src/ tests/
+```
+
+#### Type checking:
+```bash
+mypy src/
+```
 
 ## Contributing
 
