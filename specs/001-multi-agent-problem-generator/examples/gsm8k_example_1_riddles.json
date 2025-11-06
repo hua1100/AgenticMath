@@ -1,0 +1,59 @@
+{
+  "example_id": "gsm8k_1_riddles",
+  "dataset": "GSM8K",
+  "domain": "Algebra",
+  "problem_type": "Arithmetic word problem with relationships",
+  "seed_problem": "Ivory got four more riddles than Josh did. Taso got twice as many riddles as Ivory did. If Josh has 8 riddles, how many riddles does Taso have?",
+  "escalation_dimensions": [
+    "Real-world Parameterization",
+    "Multi-stage Transformation",
+    "Conditional Branching"
+  ],
+  "rephrased_problem": "Josh is participating in a school riddle competition. He has 8 riddles. Ivory, his friend, has four more riddles than Josh. Taso, another competitor, has twice as many riddles as Ivory. If Josh decides to give away 3 of his riddles and that affects the total number of riddles in the competition, how many riddles does Taso have after accounting for Josh's decision?",
+  "review_iteration_1": {
+    "scores": {
+      "clarity_grammar": 3,
+      "logical_coherence": 4,
+      "mathematical_validity": 4
+    },
+    "overall_score": 3.67,
+    "suggestions": [
+      "Clarify the influence of Josh giving away his riddles on Taso's total. For instance, specify that Taso's riddle count is independent and remains unchanged despite Josh's actions. This removes ambiguity regarding the competition's overall structure.",
+      "Instead of saying 'and that affects the total number of riddles in the competition,' use 'Josh's decision to give away his riddles does not change how many riddles Taso has.' This direct statement enhances comprehension and ensures readers understand that Taso's initial count remains constant.",
+      "Consider providing context as to whether the riddles given away affect only Josh or extend to others. A statement like 'regardless of how many riddles Josh gives away, Taso's number of riddles is based on the original count' would maintain logical clarity."
+    ],
+    "passed_threshold": false
+  },
+  "revised_problem": "Josh is participating in a school riddle competition. He has 8 riddles. Ivory, his friend, has four more riddles than Josh. Taso, another competitor, has twice as many riddles as Ivory. Josh's decision to give away 3 of his riddles does not change how many riddles Taso has. Regardless of how many riddles Josh gives away, Taso's number of riddles is based on the original count. How many riddles does Taso have?",
+  "review_iteration_2": {
+    "scores": {
+      "clarity_grammar": 5,
+      "logical_coherence": 5,
+      "mathematical_validity": 5
+    },
+    "overall_score": 5.0,
+    "suggestions": [],
+    "passed_threshold": true
+  },
+  "final_problem": "Josh is participating in a school riddle competition. He has 8 riddles. Ivory, his friend, has four more riddles than Josh. Taso, another competitor, has twice as many riddles as Ivory. Josh's decision to give away 3 of his riddles does not change how many riddles Taso has. Regardless of how many riddles Josh gives away, Taso's number of riddles is based on the original count. How many riddles does Taso have?",
+  "expected_answer": "24",
+  "solution_steps": [
+    "Identify given information: Josh has 8 riddles",
+    "Calculate Ivory's riddles: Ivory = Josh + 4 = 8 + 4 = 12 riddles",
+    "Calculate Taso's riddles: Taso = Ivory × 2 = 12 × 2 = 24 riddles",
+    "Note: Josh giving away 3 riddles does not affect Taso's count (based on original)",
+    "Final answer: Taso has 24 riddles"
+  ],
+  "key_improvements": [
+    "Explicitly stated independence of Taso's count from Josh's actions",
+    "Removed ambiguous 'affects the total' phrase",
+    "Clarified that calculations use original counts",
+    "Mathematical validity improved from 4/5 to 5/5"
+  ],
+  "metadata": {
+    "difficulty_increase": "Low to Medium",
+    "iteration_count": 2,
+    "final_status": "SUCCESS",
+    "source": "AgenticMath Research Paper, Appendix A.4.1"
+  }
+}

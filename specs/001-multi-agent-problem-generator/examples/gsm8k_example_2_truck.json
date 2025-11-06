@@ -1,0 +1,72 @@
+{
+  "example_id": "gsm8k_2_truck",
+  "dataset": "GSM8K",
+  "domain": "Algebra + Geometry",
+  "problem_type": "Work rate problem with geometric calculation",
+  "seed_problem": "Stella and Twinkle are filling a truck with a capacity of 6000 stone blocks at the rate of 250 blocks per hour per person. They work for four hours without any breaks, after which they are joined by 6 other people who work at the same rate. Calculate the total time taken to fill the truck.",
+  "escalation_dimensions": [
+    "Multi-stage Transformation",
+    "Cross-domain Integration",
+    "Real-world Parameterization"
+  ],
+  "rephrased_problem": "Stella and Twinkle are filling a truck with a capacity of 6000 cubic blocks at the rate of 250 blocks per hour per person. They work for four hours without any breaks. After this, they are joined by 6 additional people who work at the same rate. Calculate the total time taken to fill the truck. To begin, calculate the total number of blocks filled by both Stella and Twinkle during their initial 4 hours. Next, determine how long it will take for all workers (Stella, Twinkle, and the 6 additional people) to finish filling the truck. Additionally, the blocks are in the shape of cubes with a side length of 2 units. Calculate the area of the rectangular base of the truck needed to accommodate the cubes when filled to its full capacity, expressed in square units. Provide the total hours taken and the area of the base in square units.",
+  "review_iteration_1": {
+    "scores": {
+      "clarity_grammar": 4,
+      "logical_coherence": 4,
+      "mathematical_validity": 4
+    },
+    "overall_score": 4.0,
+    "suggestions": [
+      "Rephrase the initial sentence to: 'Stella and Twinkle are filling a truck with a capacity of 6000 cubic blocks, working at a rate of 250 blocks per hour each for four hours without breaks.' This enhances clarity by simplifying the phrase structure.",
+      "Provide a clearer description of the mathematical operations to carry out after working four hours. For instance, 'After 4 hours of work, determine the total blocks filled, and then calculate the time required for the remaining blocks with the help of the additional workers.' This improves logical coherence by clarifying the task transition.",
+      "Clearly request the output format by stating, 'Finally, report both the total hours taken to fill the truck and the area of the rectangular base in square units,' ensuring the conclusion is definitive and straightforward for the reader to apprehend."
+    ],
+    "passed_threshold": false
+  },
+  "revised_problem": "Stella and Twinkle are filling a truck with a capacity of 6000 cubic blocks, working at a rate of 250 blocks per hour each for four hours without breaks. After 4 hours of work, determine the total blocks filled by both Stella and Twinkle, and then calculate the time required for the remaining blocks with the help of 6 additional workers who work at the same rate. Finally, report both the total hours taken to fill the truck and the area of the rectangular base in square units needed to accommodate the blocks when filled to its full capacity, given that each block is a cube with a side length of 2 units.",
+  "review_iteration_2": {
+    "scores": {
+      "clarity_grammar": 5,
+      "logical_coherence": 5,
+      "mathematical_validity": 4.5
+    },
+    "overall_score": 4.83,
+    "suggestions": [],
+    "passed_threshold": true
+  },
+  "final_problem": "Stella and Twinkle are filling a truck with a capacity of 6000 cubic blocks, working at a rate of 250 blocks per hour each for four hours without breaks. After 4 hours of work, determine the total blocks filled by both Stella and Twinkle, and then calculate the time required for the remaining blocks with the help of 6 additional workers who work at the same rate. Finally, report both the total hours taken to fill the truck and the area of the rectangular base in square units needed to accommodate the blocks when filled to its full capacity, given that each block is a cube with a side length of 2 units.",
+  "expected_answer": {
+    "time_hours": 6,
+    "base_area_note": "Requires additional arrangement assumptions for unique answer"
+  },
+  "solution_steps": [
+    "Step 1: Calculate blocks filled in first 4 hours",
+    "- Stella and Twinkle: 2 workers × 250 blocks/hour × 4 hours = 2000 blocks",
+    "Step 2: Calculate remaining blocks",
+    "- Remaining: 6000 - 2000 = 4000 blocks",
+    "Step 3: Calculate time for remaining blocks with all workers",
+    "- Total workers: 2 (original) + 6 (additional) = 8 workers",
+    "- Rate: 8 workers × 250 blocks/hour = 2000 blocks/hour",
+    "- Time: 4000 blocks ÷ 2000 blocks/hour = 2 hours",
+    "Step 4: Calculate total time",
+    "- Total time: 4 hours (initial) + 2 hours (with help) = 6 hours",
+    "Step 5: Geometric calculation (note: needs arrangement assumptions)",
+    "- Each block: 2×2×2 = 8 cubic units",
+    "- Base area depends on arrangement (height, rows, columns)",
+    "- Problem needs additional constraints for unique geometric answer"
+  ],
+  "key_improvements": [
+    "Simplified opening sentence structure",
+    "Clearer step-by-step instructions with explicit transitions",
+    "Explicit output format requirements",
+    "Note: Geometric component still requires arrangement assumptions"
+  ],
+  "metadata": {
+    "difficulty_increase": "Medium to High",
+    "iteration_count": 2,
+    "final_status": "SUCCESS",
+    "source": "AgenticMath Research Paper, Appendix A.4.1",
+    "notes": "Cross-domain problem combining work rate (algebra) with geometry"
+  }
+}

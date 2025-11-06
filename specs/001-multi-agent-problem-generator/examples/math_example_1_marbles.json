@@ -1,0 +1,81 @@
+{
+  "example_id": "math_1_marbles",
+  "dataset": "MATH",
+  "domain": "Probability + Combinatorics",
+  "problem_type": "Expected value with conditional drawing rules",
+  "seed_problem": "I have 5 marbles numbered 1 through 5 in a bag. Suppose I take out two different marbles at random. What is the expected value of the sum of the numbers on the marbles?",
+  "escalation_dimensions": [
+    "Conditional Branching",
+    "Multi-stage Transformation",
+    "Inverse Problem Design"
+  ],
+  "rephrased_problem": "You have a bag containing 5 marbles numbered 1 through 5. You randomly draw two different marbles. If marble 1 is drawn first, then the drawn marbles are put back in the bag, and you draw again. If the first marble drawn is not 1, you keep it and draw the second marble without replacement. What is the expected value of the sum of the numbers on the marbles drawn, given that if you draw an odd-numbered marble first, you will always draw marble 2 next, while if you draw an even-numbered marble first, you will draw the next higher number available if possible? Calculate the sum for each scenario and give the overall expected value.",
+  "review_iteration_1": {
+    "scores": {
+      "clarity_grammar": 3,
+      "logical_coherence": 4,
+      "mathematical_validity": 3
+    },
+    "overall_score": 3.33,
+    "suggestions": [
+      "Simplify the language used in the problem statement for better clarity. For instance, instead of saying 'if marble 1 is drawn first, then the drawn marbles are put back in the bag,' you could say 'if marble 1 is drawn first, put the marbles back and draw again.' This succinctly conveys the same information without ambiguity.",
+      "Clearly define what happens in all scenarios after each draw. It would be beneficial to write separate scenarios or cases explicitly (e.g., drawing 1, drawing an odd number, drawing an even number), ensuring that all potential outcomes are evident to the reader to aid in understanding and solving the problem."
+    ],
+    "passed_threshold": false
+  },
+  "revised_problem": "You have a bag with 5 marbles numbered 1 through 5. You will randomly draw two different marbles according to the following rules:\n\n1. If you draw marble 1 first, put it back in the bag and draw again.\n2. If the first marble drawn is not marble 1, you keep that marble and draw a second marble without putting the first back.\n\nAdditionally:\n- If the first marble drawn is odd (3 or 5), you will draw marble 2 next.\n- If the first marble drawn is even (2 or 4), you will draw the next higher number available (for example, if you draw 2 first, you will draw 3 next; if you draw 4, you will draw 5 next).\n\nCalculate the expected value of the sum of the numbers on the marbles drawn, considering each scenario.",
+  "review_iteration_2": {
+    "scores": {
+      "clarity_grammar": 5,
+      "logical_coherence": 5,
+      "mathematical_validity": 5
+    },
+    "overall_score": 5.0,
+    "suggestions": [],
+    "passed_threshold": true
+  },
+  "final_problem": "You have a bag with 5 marbles numbered 1 through 5. You will randomly draw two different marbles according to the following rules:\n\n1. If you draw marble 1 first, put it back in the bag and draw again.\n2. If the first marble drawn is not marble 1, you keep that marble and draw a second marble without putting the first back.\n\nAdditionally:\n- If the first marble drawn is odd (3 or 5), you will draw marble 2 next.\n- If the first marble drawn is even (2 or 4), you will draw the next higher number available (for example, if you draw 2 first, you will draw 3 next; if you draw 4, you will draw 5 next).\n\nCalculate the expected value of the sum of the numbers on the marbles drawn, considering each scenario.",
+  "expected_answer": {
+    "note": "Requires probability calculation across scenarios",
+    "scenarios": [
+      "Draw 1 first (prob 1/5): Redraw, loop back",
+      "Draw 2 first (prob 1/5): Second draw is 3, sum = 5",
+      "Draw 3 first (prob 1/5): Second draw is 2, sum = 5",
+      "Draw 4 first (prob 1/5): Second draw is 5, sum = 9",
+      "Draw 5 first (prob 1/5): Second draw is 2, sum = 7"
+    ],
+    "calculation": "Need to account for redraw probability with marble 1"
+  },
+  "solution_steps": [
+    "Step 1: Enumerate all possible first draws and their probabilities",
+    "- P(draw 1 first) = 1/5 → Redraw (recursive case)",
+    "- P(draw 2 first) = 1/5",
+    "- P(draw 3 first) = 1/5",
+    "- P(draw 4 first) = 1/5",
+    "- P(draw 5 first) = 1/5",
+    "Step 2: For each valid first draw (not 1), determine second draw",
+    "- First draw 2 (even): Second draw = 3 (next higher), sum = 2+3 = 5",
+    "- First draw 3 (odd): Second draw = 2 (rule), sum = 3+2 = 5",
+    "- First draw 4 (even): Second draw = 5 (next higher), sum = 4+5 = 9",
+    "- First draw 5 (odd): Second draw = 2 (rule), sum = 5+2 = 7",
+    "Step 3: Calculate expected value",
+    "- P(not drawing 1 first) = 4/5",
+    "- Conditional probabilities given not 1: each is (1/5)/(4/5) = 1/4",
+    "- E[sum | not 1 first] = (1/4)(5) + (1/4)(5) + (1/4)(9) + (1/4)(7) = (5+5+9+7)/4 = 26/4 = 6.5",
+    "- If draw 1 first (prob 1/5), we redraw, so expected value is same",
+    "- E[sum] = 6.5"
+  ],
+  "key_improvements": [
+    "Numbered list format for clear rule presentation",
+    "Explicit case enumeration (odd vs even)",
+    "Examples provided for even-number rule",
+    "Structured formatting improves readability significantly"
+  ],
+  "metadata": {
+    "difficulty_increase": "Medium to High",
+    "iteration_count": 2,
+    "final_status": "SUCCESS",
+    "source": "AgenticMath Research Paper, Appendix A.4.2",
+    "notes": "Complex conditional probability problem with multiple branching rules"
+  }
+}
