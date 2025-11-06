@@ -12,8 +12,16 @@ This quickstart guide demonstrates how to use the AgenticMath multi-agent system
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     Student Input                            │
-│             "Solve for x: 2x + 3 = 11"                      │
+│        Photo Upload OR Text: "Solve for x: 2x + 3 = 11"    │
 └────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌────────────────────────────────────────────────────────────┐
+│              OCR Agent (if photo)                           │
+│  - Extracts text from image using PaddleOCR                │
+│  - Detects diagrams and generates descriptions             │
+│  - Produces: Text content with confidence score            │
+└────────────────────┬───────────────────────────────────────┘
                      │
                      ▼
 ┌────────────────────────────────────────────────────────────┐
@@ -52,6 +60,24 @@ This quickstart guide demonstrates how to use the AgenticMath multi-agent system
 ```
 
 ## Workflow Stages
+
+### Stage 0: Photo Upload & OCR (Optional)
+
+**Input**: Math problem photo (JPEG/PNG)
+**Agent**: Image Extraction (OCR) Agent
+**Output**: Extracted text with confidence score
+
+**Example**:
+```
+Input: photo of printed textbook problem "求解方程式：在直角三角形 ABC 中，∠C = 90°，若 AB = 10，AC = 6，求 BC 的長度。"
+
+Output:
+  OCR Confidence: 0.92 (92%)
+  Extracted Text: "求解方程式：在直角三角形 ABC 中，∠C = 90°，若 AB = 10，AC = 6，求 BC 的長度。"
+  Contains Diagram: Yes
+  Diagram Description: "包含直角三角形 ABC，標註直角於 C 點，斜邊 AB 標註長度 10，直角邊 AC 標註長度 6"
+  Processing Time: 2.3 seconds
+```
 
 ### Stage 1: Problem Rephrase
 
@@ -148,13 +174,31 @@ pip install -r requirements.txt
 
 **Core Dependencies** (see `requirements.txt`):
 ```
-langchain>=0.1.0
+# Agent Framework
+crewai>=0.1.0
+
+# LLM Providers
 openai>=1.0.0
-# or anthropic>=0.8.0 for Claude
+
+# OCR (Photo Upload Feature)
+paddleocr==2.7.0
+paddlepaddle==2.5.0  # CPU version
+# or paddlepaddle-gpu==2.5.0  # GPU version
+
+# Image Processing
+Pillow==10.0.0
+opencv-python==4.8.0
+numpy==1.24.0
+
+# Data & Storage
 pydantic>=2.0.0
 sqlalchemy>=2.0.0
 alembic>=1.13.0  # For database migrations
-pytest>=7.4.0  # For testing
+
+# Testing
+pytest>=7.4.0
+
+# Utilities
 python-dotenv>=1.0.0
 ```
 
@@ -170,11 +214,22 @@ Edit `.env`:
 
 ```env
 # LLM Provider
-LLM_PROVIDER=openai  # or 'anthropic'
-LLM_MODEL=gpt-4  # or 'claude-3-opus-20240229'
-LLM_API_KEY=sk-...  # Your API key
-LLM_TEMPERATURE=0.7
-LLM_MAX_TOKENS=2000
+OPENAI_API_KEY=sk-...  # Your API key
+OPENAI_MODEL=gpt-4o  # or 'gpt-4-turbo'
+OPENAI_TEMPERATURE=0.7
+OPENAI_MAX_TOKENS=4096
+
+# OCR Configuration (Photo Upload Feature)
+OCR_LANGUAGE=chinese_cht  # Traditional Chinese
+OCR_USE_GPU=false  # Set to true if you have CUDA-enabled GPU
+OCR_CONFIDENCE_THRESHOLD=0.70  # Minimum confidence to accept OCR result
+OCR_AUTO_ROTATION=true
+OCR_NOISE_REDUCTION=true
+OCR_CONTRAST_ENHANCEMENT=true
+
+# File Upload Settings
+UPLOAD_DIR=./uploads  # Directory to store uploaded photos
+MAX_FILE_SIZE_MB=10  # Maximum file size for uploads
 
 # Quality Settings
 QUALITY_THRESHOLD=4.5  # Range: 3.0-5.0
@@ -204,7 +259,94 @@ ls -lh agenticmath.db  # Should see database file
 
 ## Basic Usage (CLI)
 
-### Process a Single Problem
+### Process a Photo (with OCR)
+
+```bash
+# Upload and process a photo of a math problem
+python -m src.cli.main process-photo ./examples/math_problem_01.jpg
+```
+
+**Output**:
+```
+┌─────────────────────────────────────────────────────┐
+│ AgenticMath Problem Generator (Photo Mode)          │
+└─────────────────────────────────────────────────────┘
+
+[0/5] Uploading photo... ✓ (0.1s)
+   File: math_problem_01.jpg
+   Size: 2.3MB
+   Format: JPEG
+
+[1/5] Performing OCR... ✓ (2.3s)
+   Confidence: 92%
+   Contains diagram: Yes
+   Extracted text: "求解方程式：在直角三角形 ABC 中..."
+
+[2/5] Rephrasing problem... ✓ (2.8s)
+   Domain: Geometry
+   Difficulty: Medium
+
+[3/5] Reviewing quality... ✓ (1.9s)
+   Overall score: 4.7/5.0
+   Status: PASSED threshold (≥4.5)
+
+[4/5] Generating solution... ✓ (3.2s)
+   Solution steps: 5
+   Final answer: BC = 8
+
+┌─────────────────────────────────────────────────────┐
+│ Results                                              │
+└─────────────────────────────────────────────────────┘
+
+Original Problem (from OCR):
+──────────────────────────────
+求解方程式：在直角三角形 ABC 中，∠C = 90°，
+若 AB = 10，AC = 6，求 BC 的長度。
+
+[Diagram detected: 包含直角三角形 ABC...]
+
+Rephrased Problem:
+──────────────────
+在一個直角三角形 PQR 中，∠R = 90°。
+已知斜邊 PQ 長度為 10 公分，直角邊 PR 長度為 6 公分。
+若 QR 與 PR 的比值需保持相同幾何關係，
+請求出直角邊 QR 的長度。（答案四捨五入至小數點後一位）
+
+Solution:
+─────────
+Step 1: 使用畢氏定理...
+[Full solution shown]
+
+Final Answer: 8.0
+
+Session ID: a1b2c3d4-...
+Saved to: ./output/a1b2c3d4.json
+```
+
+### OCR Only (No Problem Generation)
+
+```bash
+# Just extract text from photo
+python -m src.cli.main ocr ./examples/math_problem_01.jpg
+```
+
+**Output**:
+```
+OCR Results:
+─────────────────────────────────────
+Confidence: 92%
+Processing time: 2.3s
+
+Extracted Text:
+求解方程式：在直角三角形 ABC 中，∠C = 90°，
+若 AB = 10，AC = 6，求 BC 的長度。
+
+Diagram Detected: Yes
+Description: 包含直角三角形 ABC，標註直角於 C 點，
+斜邊 AB 標註長度 10，直角邊 AC 標註長度 6
+```
+
+### Process Text Problem (Skip OCR)
 
 ```bash
 python -m src.cli.main process "Solve for x: 2x + 3 = 11"
@@ -295,7 +437,7 @@ python -m src.cli.main export 550e8400-e29b-41d4-a716-446655440000 --output sess
 
 ## Advanced Usage (Python API)
 
-### Programmatic Access
+### Process Photo with Python
 
 ```python
 from src.orchestration.pipeline import MathProblemPipeline
@@ -305,7 +447,31 @@ from src.config.settings import Settings
 settings = Settings()  # Loads from .env
 pipeline = MathProblemPipeline(settings)
 
-# Process single problem
+# Process photo
+with open("./examples/math_problem_01.jpg", "rb") as photo_file:
+    result = pipeline.process_photo(
+        image_file=photo_file,
+        quality_threshold=4.5,
+        max_iterations=5
+    )
+
+# Access OCR results
+print(f"OCR Confidence: {result.ocr_metadata.confidence_score:.2%}")
+print(f"Contains Diagram: {result.ocr_metadata.contains_diagram}")
+if result.ocr_metadata.contains_diagram:
+    print(f"Diagram: {result.ocr_metadata.diagram_description}")
+
+# Access problem results
+print(f"\nOriginal Text: {result.original_problem.content}")
+print(f"Rephrased: {result.rephrased_problem.content}")
+print(f"Quality Score: {result.quality_assessment.overall_score:.1f}/5.0")
+print(f"Solution: {result.solution.final_answer}")
+```
+
+### Process Text Problem with Python
+
+```python
+# Process text directly (skip OCR)
 result = await pipeline.process_problem(
     problem_content="Solve for x: 2x + 3 = 11",
     escalation_dimensions=[
@@ -323,6 +489,36 @@ print(f"Iterations: {result.iteration_count}")
 print(f"Rephrased Problem: {result.final_problem.content}")
 print(f"Quality Score: {result.final_assessment.overall_score}")
 print(f"Solution: {result.solution.final_answer}")
+```
+
+### Use OCR Agent Directly
+
+```python
+from src.agents.ocr_agent import ImageExtractionAgent
+
+# Initialize OCR agent
+ocr_agent = ImageExtractionAgent()
+
+# Extract text from photo
+result = ocr_agent.process({
+    "image_id": "test-001",
+    "file_path": "./examples/math_problem_01.jpg",
+    "file_format": "jpeg",
+    "file_size": 2458693,
+    "ocr_config": {
+        "language": "chinese_cht",
+        "use_angle_cls": True,
+        "use_gpu": False
+    }
+})
+
+# Check results
+if result["success"]:
+    print(f"Extracted: {result['extracted_text']}")
+    print(f"Confidence: {result['confidence_score']:.2%}")
+    print(f"Processing time: {result['processing_time_ms']}ms")
+else:
+    print(f"Error: {result['error_message']}")
 ```
 
 ### Custom Agent Configuration
@@ -433,6 +629,68 @@ max_iterations = 10
 ```
 
 ## Troubleshooting
+
+### Problem: OCR confidence too low
+
+**Symptom**: OCR result has confidence < 70%, system rejects photo
+
+**Solution**:
+1. **Retake photo with better conditions**:
+   - Ensure good lighting (avoid shadows and reflections)
+   - Hold camera steady (avoid blur)
+   - Keep text horizontal (perpendicular to camera)
+   - Fill frame with problem (avoid excessive whitespace)
+2. **Manual preprocessing**: Use image editing app to crop, rotate, adjust contrast
+3. **Manual input**: If OCR consistently fails, type problem manually
+4. **Adjust threshold**: Lower `OCR_CONFIDENCE_THRESHOLD` in `.env` (e.g., 0.60)
+
+```bash
+# Check OCR quality first
+python -m src.cli.main ocr problem.jpg
+
+# If confidence is low (e.g., 65%), can still process with warning
+python -m src.cli.main process-photo problem.jpg --force-ocr
+```
+
+### Problem: OCR misreads mathematical symbols
+
+**Symptom**: Extracted text has wrong symbols (e.g., "∞" read as "8")
+
+**Solution**:
+1. **Check original photo quality**: Mathematical symbols need high resolution
+2. **Use printed problems**: Handwritten symbols are harder to recognize
+3. **Verify OCR output**: Always review extracted text before processing
+4. **Manual correction**: Edit extracted text before passing to agents
+
+```python
+# Extract and manually correct
+result = ocr_agent.process({...})
+extracted_text = result["extracted_text"]
+
+# Manual correction
+corrected_text = extracted_text.replace("8", "∞")  # Fix misread symbol
+
+# Continue with corrected text
+pipeline.process_problem(problem_content=corrected_text)
+```
+
+### Problem: Photo contains diagram but not detected
+
+**Symptom**: `contains_diagram=false` but photo clearly has geometric figure
+
+**Solution**:
+1. **Diagram quality**: Ensure diagram lines are clear and dark
+2. **Check PaddleOCR version**: Older versions have weaker diagram detection
+3. **Manual description**: Add diagram description manually if needed
+
+```python
+# Add diagram description manually
+result = ocr_agent.process({...})
+
+if not result["contains_diagram"] and has_diagram_in_photo:
+    result["contains_diagram"] = True
+    result["diagram_description"] = "手動描述：包含一個等腰三角形..."
+```
 
 ### Problem: LLM refuses to generate mathematical content
 
