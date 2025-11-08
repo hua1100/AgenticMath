@@ -12,9 +12,15 @@ from .problem_creator import (
     create_problem_from_ocr,
     ProblemCreator,
 )
+from .iteration_manager import (
+    IterationManager,
+    IterationResult,
+)
 
 
 __all__ = [
     "create_problem_from_ocr",
     "ProblemCreator",
+    "IterationManager",
+    "IterationResult",
 ]
