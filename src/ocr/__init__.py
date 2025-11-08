@@ -39,22 +39,30 @@ from .diagram_processor import (
     DiagramProcessorConfig,
 )
 
+# Complete OCR pipeline (recommended for production)
+from .ocr_pipeline import (
+    process_image,
+    OCRPipeline,
+    OCRPipelineConfig,
+)
+
 # Image preprocessing
 from .image_preprocessor import (
     preprocess_image,
-    ImagePreprocessor,
-    PreprocessConfig,
+    PreprocessingConfig,
 )
 
 # Image uploading
 from .image_uploader import (
     upload_image,
-    ImageUploader,
-    UploadConfig,
 )
 
 
 __all__ = [
+    # Complete OCR pipeline (PRIMARY - recommended for production)
+    "process_image",
+    "OCRPipeline",
+    "OCRPipelineConfig",
     # Text extraction
     "extract_text",
     "TextRegion",
@@ -69,17 +77,14 @@ __all__ = [
     "DiagramAnalyzer",
     "DiagramAnalyzerConfig",
     "DiagramAnalysis",
-    # Integrated processing (recommended for OCR pipeline)
+    # Integrated diagram processing
     "process_diagram",
     "process_diagram_for_ocr",
     "DiagramProcessor",
     "DiagramProcessorConfig",
     # Image preprocessing
     "preprocess_image",
-    "ImagePreprocessor",
-    "PreprocessConfig",
+    "PreprocessingConfig",
     # Image uploading
     "upload_image",
-    "ImageUploader",
-    "UploadConfig",
 ]

@@ -295,20 +295,27 @@ if result["contains_diagram"]:
 **Description**: Integrate all OCR components into a single pipeline matching the image-extraction-agent.md contract.
 
 **Acceptance Criteria**:
-- [ ] Orchestrates: upload → preprocess → OCR → diagram detection
-- [ ] Returns output matching contract format
-- [ ] Updates UploadedImage record with results
-- [ ] Logs AgentExecution record (agent_type=OCR)
-- [ ] Total pipeline time <5 seconds
-- [ ] Handles all error cases with proper error codes
+- [x] Orchestrates: upload → preprocess → OCR → diagram detection
+- [x] Returns output matching contract format
+- [x] Updates UploadedImage record with results
+- [x] Logs AgentExecution record (agent_type=OCR)
+- [x] Total pipeline time <5 seconds (verified in tests)
+- [x] Handles all error cases with proper error codes
 
 **Implementation**:
-- File: `src/ocr/ocr_pipeline.py`
-- Tests: `tests/integration/test_ocr_pipeline.py`
+- File: `src/ocr/ocr_pipeline.py` (已完成 ✅)
+- Tests: `tests/integration/test_ocr_pipeline.py` (已完成 ✅, 13 tests, 94% coverage)
 
 **Verification**:
 ```python
-from src.ocr.ocr_pipeline import OCRPipeline
+from src.ocr import process_image, OCRPipeline
+
+# Using convenience function
+result = process_image(image_id, file_path)
+assert result["success"] == True
+assert result["extracted_text"] != ""
+
+# Using pipeline class
 pipeline = OCRPipeline()
 result = pipeline.process(image_id, file_path)
 assert result["success"] == True
