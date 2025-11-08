@@ -7,7 +7,8 @@ This script tests the complete pipeline with actual OpenAI API calls:
 2. Review Agent: assess quality
 3. Revise Agent: improve based on suggestions (if needed)
 4. Iteration Manager: orchestrate review-revise loop
-5. Full Pipeline: complete workflow
+5. CrewAI Pipeline: complete workflow with CrewAI orchestration
+6. Full Pipeline: complete workflow (custom implementation)
 
 Requirements:
 - OpenAI API key set in OPENAI_API_KEY environment variable
@@ -21,6 +22,9 @@ Usage:
 
     # Test iteration manager
     python scripts/test_rephrase_pipeline_e2e.py --test-iteration
+
+    # Test CrewAI pipeline (recommended - uses in-memory database)
+    python scripts/test_rephrase_pipeline_e2e.py --test-crewai
 
     # Test full pipeline (requires database)
     python scripts/test_rephrase_pipeline_e2e.py --test-pipeline
@@ -306,6 +310,115 @@ def test_iteration_manager():
         return False
 
 
+def test_crewai_pipeline():
+    """Test CrewAI Pipeline with real LLM and in-memory database."""
+    print("\n" + "="*80)
+    print("TEST 5: CrewAI Pipeline (Full Workflow)")
+    print("="*80)
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        print("❌ Error: OPENAI_API_KEY not set")
+        return False
+
+    print(f"✓ OpenAI API Key found")
+
+    # Setup in-memory database for testing
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from src.models.base import Base
+
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    db_session = Session()
+
+    print(f"✓ In-memory database created")
+
+    # Initialize pipeline
+    config = LLMConfig(api_key=api_key, model="gpt-4o", temperature=0.3)
+    llm_client = LLMClient(config)
+
+    from src.orchestration.crewai_pipeline import CrewAIPipeline
+    from src.models.problem import Problem, ProblemSource, MathDomain, SourceType
+    from uuid import uuid4
+
+    pipeline = CrewAIPipeline(
+        llm_client=llm_client,
+        db_session=db_session,
+        quality_threshold=4.5,
+        max_iterations=3,  # Limit for testing
+    )
+
+    # Create original problem
+    original_problem = Problem(
+        id=uuid4(),
+        content="一個長方形的長度比寬度多3公尺，周長為22公尺，求寬度。",
+        domain=MathDomain.ALGEBRA,
+        competencies=["linear_equations"],
+        baseline_difficulty=2,
+        source=ProblemSource.ORIGINAL,
+        source_type=SourceType.OCR,
+    )
+    db_session.add(original_problem)
+    db_session.commit()
+
+    print(f"\n📝 Original Problem:")
+    print(f"   {original_problem.content}")
+
+    dimensions = [
+        "Multi-stage Transformation",
+        "Real-world Parameterization",
+        "Conditional Branching"
+    ]
+
+    print(f"\n🎯 Escalation Dimensions:")
+    for dim in dimensions:
+        print(f"   - {dim}")
+
+    print(f"\n⏳ Running CrewAI pipeline...")
+    start = datetime.now()
+
+    try:
+        result = pipeline.process(
+            original_problem=original_problem,
+            escalation_dimensions=dimensions,
+        )
+
+        elapsed = (datetime.now() - start).total_seconds()
+
+        print(f"\n✅ Pipeline completed! (took {elapsed:.1f}s)")
+        print(f"\n📊 Results:")
+        print(f"   Session ID: {result['session_id']}")
+        print(f"   Status: {result['final_status']}")
+        print(f"   Final Score: {result['final_score']}/5.0")
+        print(f"   Iterations: {result['iteration_count']}")
+        print(f"   Total Time: {result['total_time_ms']}ms")
+
+        print(f"\n📝 Final Question:")
+        print(f"   {result['final_question'][:200]}...")
+
+        # Verify database records
+        from src.models.rephrase_session import RephraseSession
+        session = db_session.query(RephraseSession).filter_by(id=result['session_id']).first()
+
+        if session:
+            print(f"\n✅ Database Verification:")
+            print(f"   Session created: {session.created_at}")
+            print(f"   Session completed: {session.completed_at}")
+            print(f"   Final problem ID: {session.final_problem_id}")
+
+        return True
+
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+    finally:
+        db_session.close()
+
+
 def main():
     parser = argparse.ArgumentParser(description="E2E test for Rephrase Pipeline")
     parser.add_argument("--test-agent", choices=["rephrase", "review", "revise"],
@@ -314,6 +427,8 @@ def main():
                        help="Test iteration manager")
     parser.add_argument("--test-pipeline", action="store_true",
                        help="Test full pipeline (requires database)")
+    parser.add_argument("--test-crewai", action="store_true",
+                       help="Test CrewAI pipeline (uses in-memory database)")
     parser.add_argument("--test-all", action="store_true",
                        help="Run all tests")
 
@@ -335,6 +450,9 @@ def main():
 
     if args.test_all or args.test_iteration:
         results["iteration"] = test_iteration_manager()
+
+    if args.test_all or args.test_crewai:
+        results["crewai"] = test_crewai_pipeline()
 
     if args.test_pipeline:
         print("\n⚠️  Full pipeline test requires database setup")

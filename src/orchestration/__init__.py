@@ -3,7 +3,7 @@ Orchestration module for coordinating multi-agent workflows.
 
 This module provides:
 - Problem creation from OCR results
-- Problem rephrase orchestration
+- Problem rephrase orchestration (CrewAI-based and custom)
 - Quality control workflows
 - Agent coordination
 """
@@ -20,6 +20,10 @@ from .rephrase_pipeline import (
     RephrasePipeline,
     PipelineResult,
 )
+from .crewai_pipeline import (
+    CrewAIPipeline,
+    AgentToolkit,
+)
 
 
 __all__ = [
@@ -29,4 +33,6 @@ __all__ = [
     "IterationResult",
     "RephrasePipeline",
     "PipelineResult",
+    "CrewAIPipeline",
+    "AgentToolkit",
 ]
