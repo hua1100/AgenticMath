@@ -146,7 +146,8 @@ class OCRExtractor:
         self._initialize_ocr()
 
         # Perform OCR
-        result = self._ocr.ocr(str(image_path), cls=self.config.use_angle_cls)
+        # Note: Configuration parameters are set during PaddleOCR initialization
+        result = self._ocr.ocr(str(image_path))
 
         # Parse results
         text_regions = []
