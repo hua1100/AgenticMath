@@ -16,6 +16,10 @@ from .iteration_manager import (
     IterationManager,
     IterationResult,
 )
+from .rephrase_pipeline import (
+    RephrasePipeline,
+    PipelineResult,
+)
 
 
 __all__ = [
@@ -23,4 +27,6 @@ __all__ = [
     "ProblemCreator",
     "IterationManager",
     "IterationResult",
+    "RephrasePipeline",
+    "PipelineResult",
 ]
