@@ -334,24 +334,32 @@ assert result["extracted_text"] != ""
 **Description**: Create Problem entity from OCR-extracted text.
 
 **Acceptance Criteria**:
-- [ ] Creates Problem with `source=ORIGINAL`, `source_type=OCR`
-- [ ] Links Problem to UploadedImage (`uploaded_image_id`)
-- [ ] Identifies domain using simple keyword matching (placeholder for P1)
-- [ ] Sets baseline competencies (placeholder for P1)
-- [ ] Stores in database
-- [ ] Returns problem_id
+- [x] Creates Problem with `source=ORIGINAL`, `source_type=OCR`
+- [x] Links Problem to UploadedImage (`uploaded_image_id`)
+- [x] Identifies domain using simple keyword matching (placeholder for P1)
+- [x] Sets baseline competencies (placeholder for P1)
+- [x] Stores in database
+- [x] Returns problem_id
 
 **Implementation**:
-- File: `src/orchestration/problem_creator.py`
-- Tests: `tests/unit/test_problem_creator.py`
+- File: `src/orchestration/problem_creator.py` (已完成 ✅)
+- Tests: `tests/unit/test_problem_creator.py` (已完成 ✅, 21 tests, 98% coverage)
 
 **Verification**:
 ```python
-from src.orchestration.problem_creator import create_problem_from_ocr
+from src.orchestration import create_problem_from_ocr
+from src.models.problem import ProblemSource, SourceType
+
+# Create problem from OCR result
 problem = create_problem_from_ocr(ocr_result, image_id)
+
+# Verify problem properties
 assert problem.source == ProblemSource.ORIGINAL
 assert problem.source_type == SourceType.OCR
 assert problem.uploaded_image_id == image_id
+assert problem.domain in MathDomain
+assert len(problem.competencies) > 0
+assert 1 <= problem.baseline_difficulty <= 5
 ```
 
 ---
