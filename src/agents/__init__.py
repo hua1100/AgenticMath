@@ -9,8 +9,11 @@ This module provides:
 """
 
 from .llm_client import LLMClient, LLMConfig
+from .rephrase_agent import RephraseAgent, VALID_ESCALATION_DIMENSIONS
 
 __all__ = [
     "LLMClient",
     "LLMConfig",
+    "RephraseAgent",
+    "VALID_ESCALATION_DIMENSIONS",
 ]
