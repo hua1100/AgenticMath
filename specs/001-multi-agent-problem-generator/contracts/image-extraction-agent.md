@@ -79,6 +79,24 @@ Image Extraction Agent 負責從學生上傳的照片中提取數學題目文字
       "description": "直角三角形，標註邊長"
     }
   ],
+  "diagram_analysis": {
+    "diagram_type": "right_triangle",
+    "key_concepts": ["pythagorean_theorem", "trigonometry"],
+    "features": {
+      "vertices": ["A", "B", "C"],
+      "right_angle_at": "C",
+      "labeled_sides": {
+        "AB": "10",
+        "AC": "6"
+      },
+      "unlabeled_sides": ["BC"]
+    },
+    "difficulty_indicators": {
+      "has_labels": true,
+      "requires_calculation": true,
+      "complexity": "medium"
+    }
+  },
   "preprocessing_applied": ["rotation_corrected", "contrast_enhanced"],
   "processing_time_ms": 2340,
   "ocr_engine": "paddleocr",
@@ -104,6 +122,11 @@ Image Extraction Agent 負責從學生上傳的照片中提取數學題目文字
 | `diagram_regions[].bbox` | Array | 是 | 圖表區域的邊界框 |
 | `diagram_regions[].type` | String | 是 | 圖表類型（geometric_figure, chart, table） |
 | `diagram_regions[].description` | String | 否 | 圖表描述 |
+| `diagram_analysis` | Object | 否 | 圖表深度分析（如果 contains_diagram = true） |
+| `diagram_analysis.diagram_type` | String | 是 | 具體圖形類型（right_triangle, circle, parabola 等） |
+| `diagram_analysis.key_concepts` | Array[String] | 是 | 相關數學考點（pythagorean_theorem, similarity 等） |
+| `diagram_analysis.features` | Object | 是 | 圖表特徵（頂點、邊長、角度等） |
+| `diagram_analysis.difficulty_indicators` | Object | 是 | 難度指標（用於生成近似題） |
 | `preprocessing_applied` | Array[String] | 是 | 實際執行的預處理步驟 |
 | `processing_time_ms` | Integer | 是 | OCR 處理耗時（毫秒） |
 | `ocr_engine` | String | 是 | 使用的 OCR 引擎名稱 |
@@ -214,37 +237,94 @@ def extract_text(image_path: str, ocr_config: dict) -> dict:
     }
 ```
 
-### 3. 圖表檢測與描述
+### 3. 圖表檢測與分析
+
+#### 3.1 基礎檢測（OpenCV）
 
 ```python
-def detect_diagrams(image_path: str, text_regions: list) -> dict:
+def detect_diagrams_basic(image_path: str) -> dict:
     """
-    檢測並描述圖表區域
+    使用 OpenCV 進行基礎圖表檢測
 
-    方法：
-    1. 使用版面分析檢測非文字區域
-    2. 識別幾何圖形（三角形、圓形、矩形等）
-    3. 生成圖表文字描述
+    目的：快速檢測圖表存在與位置
     """
-    # 使用 PaddleOCR 的版面分析功能
-    layout_result = ocr.structure(image_path)
+    # 檢測圖表區域
+    # 識別基本形狀（三角形、圓形、矩形）
+    # 返回邊界框
+```
 
-    diagram_regions = []
-    for region in layout_result:
-        if region['type'] in ['figure', 'chart', 'table']:
-            diagram_regions.append({
-                "bbox": region['bbox'],
-                "type": region['type'],
-                "description": generate_description(region)
-            })
+#### 3.2 深度分析（Vision LLM）
 
-    contains_diagram = len(diagram_regions) > 0
-    diagram_description = "; ".join([r["description"] for r in diagram_regions]) if contains_diagram else None
+```python
+def analyze_diagram_with_llm(image_path: str, bbox: list) -> dict:
+    """
+    使用 GPT-4 Vision 深度分析圖表
+
+    目的：
+    1. 理解圖表類型和特徵
+    2. 識別數學考點
+    3. 為生成近似題準備資訊
+
+    注意：只在檢測到圖表時才調用（節省 API 成本）
+    """
+    # 裁剪圖表區域
+    diagram_image = crop_image(image_path, bbox)
+
+    # 構建 Vision LLM prompt
+    prompt = """
+    請分析這個數學圖表，提供以下資訊：
+
+    1. 圖形類型（例如：直角三角形、等腰三角形、圓形、拋物線等）
+    2. 數學考點（例如：畢氏定理、三角函數、相似三角形等）
+    3. 圖表特徵：
+       - 頂點標註（如 A, B, C）
+       - 已標註的邊長或角度
+       - 未標註但可能需要求解的部分
+    4. 難度指標：
+       - 是否有完整標註
+       - 是否需要計算
+       - 複雜度（簡單/中等/困難）
+
+    以 JSON 格式回答，範例：
+    {
+      "diagram_type": "right_triangle",
+      "key_concepts": ["pythagorean_theorem", "trigonometry"],
+      "features": {
+        "vertices": ["A", "B", "C"],
+        "right_angle_at": "C",
+        "labeled_sides": {"AB": "10", "AC": "6"},
+        "unlabeled_sides": ["BC"]
+      },
+      "difficulty_indicators": {
+        "has_labels": true,
+        "requires_calculation": true,
+        "complexity": "medium"
+      }
+    }
+    """
+
+    # 調用 GPT-4 Vision API
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": encode_image(diagram_image)}}
+                ]
+            }
+        ]
+    )
+
+    # 解析回應
+    analysis = json.loads(response.choices[0].message.content)
 
     return {
-        "contains_diagram": contains_diagram,
-        "diagram_description": diagram_description,
-        "diagram_regions": diagram_regions
+        "diagram_type": analysis["diagram_type"],
+        "key_concepts": analysis["key_concepts"],
+        "features": analysis["features"],
+        "difficulty_indicators": analysis["difficulty_indicators"]
     }
 ```
 

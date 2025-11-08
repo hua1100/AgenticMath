@@ -204,36 +204,78 @@ assert len(result["text_regions"]) > 0
 
 ---
 
-### Task 1.4: Diagram Detection & Description
+### Task 1.4: Diagram Analysis & Understanding
 
 **Priority**: P0
-**Complexity**: 7 hours
+**Complexity**: 10 hours
 **Dependencies**: Task 1.3
 **Related**: FR-007, SC-003
 
-**Description**: Detect diagrams/charts in images and generate text descriptions.
+**Description**: Detect diagrams in images and analyze them to understand diagram type, math concepts, and features. This analysis will be used to generate similar problems with different difficulty levels.
+
+**Two-Stage Approach**:
+1. **Basic Detection** (OpenCV): Fast detection of diagram presence and location
+2. **Deep Analysis** (Vision LLM): Understand diagram content, math concepts, and features
 
 **Acceptance Criteria**:
-- [ ] Detects geometric figures (triangles, circles, rectangles)
-- [ ] Identifies chart/table regions using layout analysis
-- [ ] Generates descriptive text for diagrams (e.g., "包含直角三角形，標註邊長 a, b, c")
-- [ ] Returns diagram bounding boxes
-- [ ] Detection success rate ≥80% for geometric figures
-- [ ] Handles images with no diagrams (returns empty)
+
+**Stage 1 - Basic Detection (已完成 ✅)**:
+- [x] Detects geometric figures (triangles, circles, rectangles)
+- [x] Returns diagram bounding boxes
+- [x] Detection success rate ≥80% for geometric figures
+- [x] Handles images with no diagrams (returns empty)
+
+**Stage 2 - Deep Analysis (待實現)**:
+- [ ] Uses GPT-4 Vision to analyze diagram content
+- [ ] Identifies diagram type (right_triangle, equilateral_triangle, circle, etc.)
+- [ ] Extracts key math concepts (pythagorean_theorem, similarity, trigonometry, etc.)
+- [ ] Extracts diagram features (vertices, labeled sides, angles, etc.)
+- [ ] Provides difficulty indicators for problem generation
+- [ ] Analysis accuracy ≥85%
+- [ ] Only calls Vision LLM when diagram is detected (cost optimization)
 
 **Implementation**:
-- File: `src/ocr/diagram_detector.py`
-- Tests: `tests/unit/test_diagram_detector.py`
+- File: `src/ocr/diagram_detector.py` (基礎檢測，已完成)
+- File: `src/ocr/diagram_analyzer.py` (深度分析，待實現)
+- Tests: `tests/unit/test_diagram_detector.py` (已完成)
+- Tests: `tests/unit/test_diagram_analyzer.py` (待實現)
 - Test data: Images with geometry diagrams
+
+**Output Format**:
+```json
+{
+  "contains_diagram": true,
+  "diagram_regions": [...],
+  "diagram_analysis": {
+    "diagram_type": "right_triangle",
+    "key_concepts": ["pythagorean_theorem", "trigonometry"],
+    "features": {
+      "vertices": ["A", "B", "C"],
+      "right_angle_at": "C",
+      "labeled_sides": {"AB": "10", "AC": "6"},
+      "unlabeled_sides": ["BC"]
+    },
+    "difficulty_indicators": {
+      "has_labels": true,
+      "requires_calculation": true,
+      "complexity": "medium"
+    }
+  }
+}
+```
 
 **Verification**:
 ```python
-from src.ocr.diagram_detector import detect_diagrams
-result = detect_diagrams(image_path)
+from src.ocr.diagram_analyzer import analyze_diagram
+result = analyze_diagram(image_path)
 if result["contains_diagram"]:
-    assert result["diagram_description"] is not None
-    assert len(result["diagram_regions"]) > 0
+    assert result["diagram_analysis"] is not None
+    assert "diagram_type" in result["diagram_analysis"]
+    assert "key_concepts" in result["diagram_analysis"]
+    assert "features" in result["diagram_analysis"]
 ```
+
+**Note**: 圖表生成功能（diagram generation）將在題目生成階段實現，不在 OCR 階段。
 
 ---
 
