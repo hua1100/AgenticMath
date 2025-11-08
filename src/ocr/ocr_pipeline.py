@@ -6,6 +6,9 @@ image-extraction-agent.md contract specification.
 """
 
 import time
+import os
+import tempfile
+import cv2
 from pathlib import Path
 from typing import Dict, Any, Optional
 from uuid import UUID
@@ -141,8 +144,13 @@ class OCRPipeline:
             )
             preprocessing_time_ms = int((time.time() - preprocess_start) * 1000)
 
-            preprocessed_path = preprocessing_result["output_path"]
-            preprocessing_applied = preprocessing_result["applied_steps"]
+            preprocessed_image = preprocessing_result["preprocessed_image"]
+            preprocessing_applied = preprocessing_result["preprocessing_applied"]
+
+            # Save preprocessed image to temporary file for OCR and diagram processing
+            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+                preprocessed_path = tmp.name
+                cv2.imwrite(preprocessed_path, preprocessed_image)
 
             # Stage 2: Text Extraction (OCR)
             ocr_start = time.time()
@@ -159,6 +167,9 @@ class OCRPipeline:
                 openai_api_key=self.config.openai_api_key,
             )
             diagram_time_ms = int((time.time() - diagram_start) * 1000)
+
+            # Clean up temporary file
+            os.unlink(preprocessed_path)
 
             # Calculate total processing time
             total_time_ms = int((time.time() - start_time) * 1000)
