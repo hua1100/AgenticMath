@@ -59,15 +59,34 @@ def debug_paddleocr(image_path: str):
                 print(f"  內容: {result}")
 
                 if result and result[0]:
-                    print(f"\n✅ 識別到 {len(result[0])} 個文字區域:")
-                    for i, line in enumerate(result[0][:5], 1):
-                        print(f"\n  區域 {i}:")
-                        print(f"    Bounding Box: {line[0]}")
-                        print(f"    文字: {line[1][0]}")
-                        print(f"    信心度: {line[1][1]:.2%}")
+                    first_result = result[0]
 
-                    if len(result[0]) > 5:
-                        print(f"\n  ... 還有 {len(result[0]) - 5} 個區域")
+                    # Check format
+                    if isinstance(first_result, dict) and 'rec_texts' in first_result:
+                        # New format
+                        rec_texts = first_result.get('rec_texts', [])
+                        rec_scores = first_result.get('rec_scores', [])
+
+                        print(f"\n✅ 識別到 {len(rec_texts)} 個文字區域:")
+                        for i in range(min(5, len(rec_texts))):
+                            print(f"\n  區域 {i+1}:")
+                            print(f"    文字: {rec_texts[i]}")
+                            if i < len(rec_scores):
+                                print(f"    信心度: {rec_scores[i]:.2%}")
+
+                        if len(rec_texts) > 5:
+                            print(f"\n  ... 還有 {len(rec_texts) - 5} 個區域")
+                    else:
+                        # Old format
+                        print(f"\n✅ 識別到 {len(first_result)} 個文字區域:")
+                        for i, line in enumerate(first_result[:5], 1):
+                            print(f"\n  區域 {i}:")
+                            print(f"    Bounding Box: {line[0]}")
+                            print(f"    文字: {line[1][0]}")
+                            print(f"    信心度: {line[1][1]:.2%}")
+
+                        if len(first_result) > 5:
+                            print(f"\n  ... 還有 {len(first_result) - 5} 個區域")
                 else:
                     print(f"\n⚠️  沒有識別到任何文字區域")
                     print(f"  result 為空或 result[0] 為空")

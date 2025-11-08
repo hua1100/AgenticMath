@@ -154,36 +154,70 @@ class OCRExtractor:
         all_text = []
 
         if result and result[0]:
-            for line in result[0]:
-                try:
-                    # line format: [bbox, (text, confidence)]
-                    # Handle cases where format might be unexpected
-                    if not line or len(line) < 2:
+            # PaddleOCR 2.7+ can return two different formats:
+            # Format 1 (new): [{'rec_texts': [...], 'rec_scores': [...], 'rec_polys': [...]}]
+            # Format 2 (old): [[bbox, (text, confidence)], ...]
+
+            first_result = result[0]
+
+            # Check if it's the new dictionary format
+            if isinstance(first_result, dict) and 'rec_texts' in first_result:
+                # New format
+                rec_texts = first_result.get('rec_texts', [])
+                rec_scores = first_result.get('rec_scores', [])
+                rec_polys = first_result.get('rec_polys', [])
+
+                for i in range(len(rec_texts)):
+                    try:
+                        text = rec_texts[i]
+                        confidence = rec_scores[i] if i < len(rec_scores) else 0.0
+                        bbox = rec_polys[i] if i < len(rec_polys) else []
+
+                        # Skip empty text
+                        if not text or not isinstance(text, str):
+                            continue
+
+                        # Convert bbox to list of [x, y] pairs
+                        if len(bbox) > 0:
+                            bbox_int = [[int(x), int(y)] for x, y in bbox]
+                        else:
+                            # If no bbox, create a dummy one
+                            bbox_int = [[0, 0], [100, 0], [100, 20], [0, 20]]
+
+                        text_regions.append(TextRegion(bbox_int, text, confidence))
+                        all_text.append(text)
+                    except (IndexError, TypeError, ValueError):
                         continue
+            else:
+                # Old format: list of [bbox, (text, confidence)]
+                for line in first_result:
+                    try:
+                        # line format: [bbox, (text, confidence)]
+                        if not line or len(line) < 2:
+                            continue
 
-                    bbox = line[0]
-                    text_info = line[1]
+                        bbox = line[0]
+                        text_info = line[1]
 
-                    # Check if text_info has the expected format
-                    if not text_info or len(text_info) < 2:
+                        # Check if text_info has the expected format
+                        if not text_info or len(text_info) < 2:
+                            continue
+
+                        text = text_info[0]
+                        confidence = text_info[1]
+
+                        # Skip empty text
+                        if not text or not isinstance(text, str):
+                            continue
+
+                        # Convert bbox coordinates to integers
+                        bbox_int = [[int(x), int(y)] for x, y in bbox]
+
+                        text_regions.append(TextRegion(bbox_int, text, confidence))
+                        all_text.append(text)
+                    except (IndexError, TypeError, ValueError):
+                        # Skip malformed lines and continue processing
                         continue
-
-                    text = text_info[0]
-                    confidence = text_info[1]
-
-                    # Skip empty text
-                    if not text or not isinstance(text, str):
-                        continue
-
-                    # Convert bbox coordinates to integers
-                    bbox_int = [[int(x), int(y)] for x, y in bbox]
-
-                    text_regions.append(TextRegion(bbox_int, text, confidence))
-                    all_text.append(text)
-                except (IndexError, TypeError, ValueError) as e:
-                    # Skip malformed lines and continue processing
-                    # This makes the extraction more robust to unexpected OCR output formats
-                    continue
 
         # Calculate metrics
         has_text = len(text_regions) > 0
