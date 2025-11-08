@@ -24,16 +24,24 @@ def _check_paddleocr_available():
     """Check if PaddleOCR can be initialized (models available)."""
     try:
         from paddleocr import PaddleOCR
+        import os
+
         # Try to initialize with minimal configuration
+        # Suppress PaddleOCR logs during check
+        os.environ.setdefault('FLAGS_logging_level', '3')
+
         ocr = PaddleOCR(
             lang="en",
             use_textline_orientation=False,
             use_doc_orientation_classify=False,
             use_doc_unwarping=False,
         )
+        print("✅ PaddleOCR 模型檢查通過")
         return True
     except Exception as e:
         # Network unavailable or models cannot be downloaded
+        print(f"⚠️  PaddleOCR 模型檢查失敗: {type(e).__name__}: {str(e)[:100]}")
+        print("   提示：首次使用需要網絡連接以下載模型")
         return False
 
 

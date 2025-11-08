@@ -10,7 +10,7 @@
 
 ## 🚀 快速開始（推薦方法）
 
-### 方法 A：使用自動化腳本（最簡單）
+### 方法 A：使用手動測試腳本（最簡單、最直觀）⭐
 
 ```bash
 # 1. 執行設置腳本（會自動創建虛擬環境並安裝依賴）
@@ -19,14 +19,33 @@
 # 2. 啟動虛擬環境
 source venv-ocr-test/bin/activate
 
-# 3. 執行測試
+# 3. 執行手動測試腳本（互動式、有詳細輸出）
+python test_ocr_manual.py
+
+# 或者測試自己的圖片
+python test_ocr_manual.py path/to/your/image.jpg
+
+# 4. 測試完成後退出虛擬環境
+deactivate
+```
+
+### 方法 B：使用 pytest（適合自動化測試）
+
+```bash
+# 1. 執行設置腳本（會自動創建虛擬環境並安裝依賴）
+./setup_ocr_test_env.sh
+
+# 2. 啟動虛擬環境
+source venv-ocr-test/bin/activate
+
+# 3. 執行 pytest 測試
 pytest tests/unit/test_text_extractor.py -v
 
 # 4. 測試完成後退出虛擬環境
 deactivate
 ```
 
-### 方法 B：手動設置
+### 方法 C：手動設置
 
 ```bash
 # 1. 創建新的虛擬環境
@@ -55,7 +74,10 @@ deactivate
 
 ### 在有網絡連接的環境中：
 
+執行測試時會先看到 PaddleOCR 模型檢查：
+
 ```
+✅ PaddleOCR 模型檢查通過
 ======================== test session starts =========================
 collected 24 items
 
@@ -74,7 +96,11 @@ test_text_extractor.py::TestPerformance::test_singleton_performance PASSED
 
 ### 在離線環境中（無網絡連接）：
 
+執行測試時會看到詳細的錯誤提示：
+
 ```
+⚠️  PaddleOCR 模型檢查失敗: Exception: No available model hosting platforms detected
+   提示：首次使用需要網絡連接以下載模型
 ===================== test session starts ========================
 collected 24 items
 
@@ -87,6 +113,7 @@ test_text_extractor.py::TestOCRExtractor::test_extract_from_image SKIPPED
 ```
 
 **說明**：
+- 會顯示為什麼 PaddleOCR 模型不可用（網絡連接問題）
 - 10 個測試通過（配置、初始化、錯誤處理）
 - 14 個測試被跳過（需要 PaddleOCR 模型）
 - 這是正常現象，不代表代碼有問題
@@ -125,9 +152,75 @@ test_text_extractor.py::TestOCRExtractor::test_extract_from_image SKIPPED
    - 提取速度驗證
    - 單例模式性能
 
+## 🎯 手動測試腳本使用說明
+
+我們提供了 `test_ocr_manual.py` 腳本，讓您可以更直觀地測試 OCR 功能。
+
+### 基本使用
+
+```bash
+# 啟動虛擬環境
+source venv-ocr-test/bin/activate
+
+# 執行互動式測試
+python test_ocr_manual.py
+
+# 會顯示選單讓您選擇：
+# 1. 測試單一圖片（simple_math.jpg）
+# 2. 測試所有測試圖片
+```
+
+### 測試自己的圖片
+
+```bash
+python test_ocr_manual.py /path/to/your/image.jpg
+```
+
+### 輸出範例
+
+```
+╔══════════════════════════════════════════════════════════╗
+║         PaddleOCR 功能手動測試工具                        ║
+╚══════════════════════════════════════════════════════════╝
+
+🧪 測試 1: 基本 OCR 功能
+============================================================
+📸 測試圖片: tests/fixtures/images/simple_math.jpg
+⏳ 執行 OCR 識別...
+   （首次執行會下載模型，約需 3-5 分鐘，請耐心等待）
+
+✅ OCR 執行成功！
+
+📊 識別結果:
+------------------------------------------------------------
+成功: True
+是否有文字: True
+文字區域數量: 1
+信心分數: 0.95
+處理時間: 850 ms
+
+📝 識別出的文字:
+------------------------------------------------------------
+Solve for x: 2x + 3 = 11
+
+🎉 測試完成！OCR 功能運作正常
+```
+
 ## 🛠️ 疑難排解
 
-### 問題 1: ModuleNotFoundError: No module named 'numpy.exceptions'
+### 問題 1: paddlepaddle==2.5.2 無法安裝（macOS ARM64）
+
+**錯誤訊息**：`ERROR: No matching distribution found for paddlepaddle==2.5.2`
+
+**原因**：paddlepaddle 2.5.2 不支援 macOS ARM64 + Python 3.11
+
+**解決方案**：我們已經更新 `requirements-ocr-test.txt` 使用 `paddlepaddle==3.2.1`（支援 macOS ARM64）
+```bash
+# 重新安裝依賴
+pip install -r requirements-ocr-test.txt
+```
+
+### 問題 2: ModuleNotFoundError: No module named 'numpy.exceptions'
 
 **原因**：numpy 版本衝突
 

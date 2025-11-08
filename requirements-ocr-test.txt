@@ -4,8 +4,8 @@
 # ============================================
 # 核心 OCR 依賴
 # ============================================
-# PaddlePaddle 深度學習框架 (CPU 版本)
-paddlepaddle==3.0.0b2
+# PaddlePaddle 深度學習框架 (使用最新穩定版本，支援 macOS ARM64)
+paddlepaddle==3.2.1
 
 # PaddleOCR 文字識別引擎
 paddleocr==3.3.1
