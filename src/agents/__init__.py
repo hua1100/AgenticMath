@@ -11,6 +11,7 @@ This module provides:
 from .llm_client import LLMClient, LLMConfig
 from .rephrase_agent import RephraseAgent, VALID_ESCALATION_DIMENSIONS
 from .review_agent import ReviewAgent
+from .revise_agent import ReviseAgent
 
 __all__ = [
     "LLMClient",
@@ -18,4 +19,5 @@ __all__ = [
     "RephraseAgent",
     "VALID_ESCALATION_DIMENSIONS",
     "ReviewAgent",
+    "ReviseAgent",
 ]
