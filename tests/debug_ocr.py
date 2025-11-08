@@ -145,18 +145,26 @@ def test_ocr(image_path: str):
 
 
 def test_full_pipeline(image_path: str):
-    """測試完整 OCR Pipeline"""
+    """测试完整 OCR Pipeline"""
     print(f"\n{'='*80}")
     print(f"  完整 OCR Pipeline 測試")
     print(f"{'='*80}\n")
 
     try:
-        from src.ocr import process_image
+        from src.ocr import OCRPipeline, OCRPipelineConfig
         from uuid import uuid4
 
+        # 创建配置，禁用数据库保存（仅测试功能）
+        config = OCRPipelineConfig(
+            save_to_database=False,  # 不保存到数据库，仅测试
+            enable_diagram_analysis=True,
+        )
+
+        pipeline = OCRPipeline(config=config)
         image_id = uuid4()
+
         print(f"⏳ 執行完整 Pipeline（預處理 → OCR → 圖表分析）...")
-        result = process_image(image_id, image_path)
+        result = pipeline.process(image_id, image_path)
 
         print(f"\n📊 Pipeline 結果:")
         print(f"   成功: {result['success']}")
