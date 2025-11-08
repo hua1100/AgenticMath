@@ -177,11 +177,11 @@ class OCRPipeline:
             # Build result matching contract format
             result = {
                 "success": True,
-                "extracted_text": ocr_result["extracted_text"],
-                "confidence_score": ocr_result["confidence_score"],
-                "contains_diagram": diagram_result["contains_diagram"],
+                "extracted_text": ocr_result.get("text", ""),  # text_extractor returns "text", not "extracted_text"
+                "confidence_score": ocr_result.get("confidence_score", 0.0),
+                "contains_diagram": diagram_result.get("contains_diagram", False),
                 "diagram_description": diagram_result.get("diagram_description"),
-                "text_regions": [r.to_dict() for r in ocr_result["text_regions"]],
+                "text_regions": [r.to_dict() for r in ocr_result.get("text_regions", [])],
                 "diagram_regions": diagram_result.get("diagram_regions", []),
                 "diagram_analysis": diagram_result.get("diagram_analysis"),
                 "preprocessing_applied": preprocessing_applied,
@@ -192,12 +192,12 @@ class OCRPipeline:
             }
 
             # Add warnings based on confidence
-            if ocr_result["confidence_score"] < 0.70:
+            if ocr_result.get("confidence_score", 0.0) < 0.70:
                 result["warnings"].append(
-                    f"圖片品質過低，信心度 < 70% (actual: {ocr_result['confidence_score']:.0%})"
+                    f"圖片品質過低，信心度 < 70% (actual: {ocr_result.get('confidence_score', 0.0):.0%})"
                 )
 
-            if len(ocr_result["text_regions"]) == 0:
+            if len(ocr_result.get("text_regions", [])) == 0:
                 result["warnings"].append("未檢測到任何文字區域")
 
             # Check if OCR failed completely
