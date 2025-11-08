@@ -155,16 +155,35 @@ class OCRExtractor:
 
         if result and result[0]:
             for line in result[0]:
-                # line format: [bbox, (text, confidence)]
-                bbox = line[0]
-                text = line[1][0]
-                confidence = line[1][1]
+                try:
+                    # line format: [bbox, (text, confidence)]
+                    # Handle cases where format might be unexpected
+                    if not line or len(line) < 2:
+                        continue
 
-                # Convert bbox coordinates to integers
-                bbox_int = [[int(x), int(y)] for x, y in bbox]
+                    bbox = line[0]
+                    text_info = line[1]
 
-                text_regions.append(TextRegion(bbox_int, text, confidence))
-                all_text.append(text)
+                    # Check if text_info has the expected format
+                    if not text_info or len(text_info) < 2:
+                        continue
+
+                    text = text_info[0]
+                    confidence = text_info[1]
+
+                    # Skip empty text
+                    if not text or not isinstance(text, str):
+                        continue
+
+                    # Convert bbox coordinates to integers
+                    bbox_int = [[int(x), int(y)] for x, y in bbox]
+
+                    text_regions.append(TextRegion(bbox_int, text, confidence))
+                    all_text.append(text)
+                except (IndexError, TypeError, ValueError) as e:
+                    # Skip malformed lines and continue processing
+                    # This makes the extraction more robust to unexpected OCR output formats
+                    continue
 
         # Calculate metrics
         has_text = len(text_regions) > 0

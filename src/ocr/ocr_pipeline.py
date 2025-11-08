@@ -237,11 +237,20 @@ class OCRPipeline:
             return result
 
         except Exception as e:
-            # Handle unexpected errors
+            # Handle unexpected errors with detailed info for debugging
+            import traceback
             error_time_ms = int((time.time() - start_time) * 1000)
+            error_detail = str(e)
+
+            # Add traceback for better debugging (only last 2 frames to keep it concise)
+            tb_lines = traceback.format_exc().split('\n')
+            if len(tb_lines) > 3:
+                # Include the last few lines which show the actual error
+                error_detail += f"\n位置: {tb_lines[-3].strip()}"
+
             return self._error_response(
                 error_code="OCR_ENGINE_ERROR",
-                error_message=f"OCR 引擎內部錯誤: {str(e)}",
+                error_message=f"OCR 引擎內部錯誤: {error_detail}",
                 processing_time_ms=error_time_ms,
             )
 

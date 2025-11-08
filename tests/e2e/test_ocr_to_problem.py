@@ -120,7 +120,7 @@ def create_test_image(db: Session) -> UploadedImage:
         file_path=str(test_image_path),
         file_size=test_image_path.stat().st_size,
         file_format=ImageFormat.JPEG,
-        upload_timestamp=datetime.utcnow(),
+        upload_timestamp=datetime.now(),
         ocr_extracted_text="",  # OCR 後會更新
         ocr_confidence_score=0.0,
         contains_diagram=False,
