@@ -30,7 +30,7 @@ print("="*80)
 
 # 導入模組
 print("\n📦 導入模組...")
-from src.models.base import Base
+from src.storage.database import Base
 from src.models.problem import Problem, ProblemSource, MathDomain, SourceType
 from src.agents.llm_client import LLMClient, LLMConfig
 from src.orchestration.crewai_pipeline import CrewAIPipeline
