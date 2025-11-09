@@ -8,10 +8,16 @@
 
 import os
 import sys
+from pathlib import Path
 from uuid import uuid4
 from datetime import datetime
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+# 加入專案根目錄到 Python 路徑
+project_root = Path(__file__).parent.absolute()
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 # 檢查 API key
 if not os.getenv("OPENAI_API_KEY"):
