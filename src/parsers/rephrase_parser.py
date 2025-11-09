@@ -102,12 +102,50 @@ class RephraseParser:
                 core_competencies = ["mathematical_reasoning"]
 
             # Extract baseline difficulty from stage1
-            difficulty_match = re.search(r"Baseline Difficulty:\s*(\d)", stage1_text, re.IGNORECASE)
+            # Support both English and Chinese
+            difficulty_match = re.search(
+                r"(?:Baseline Difficulty|基準難度)[:：]\s*(\d)",
+                stage1_text,
+                re.IGNORECASE
+            )
             baseline_difficulty = int(difficulty_match.group(1)) if difficulty_match else 3
 
             # Extract applied dimensions from stage2
-            # Look for numbered list items
-            dimension_matches = re.findall(r"\d+\.\s+([^:]+):", stage2_text)
+            # Support multiple formats:
+            # 1. "1. Multi-stage Transformation: description"
+            # 2. "1. Multi-stage Transformation（多階段轉換）: description"
+            # 3. "1. 多階段轉換: description"
+            # 4. "1. Multi-stage Transformation" (no colon)
+
+            # First try: numbered list with English names (may have Chinese in parentheses)
+            dimension_matches = re.findall(
+                r"\d+\.\s*([A-Za-z][A-Za-z\s\-]+?)(?:（[^）]+）)?[:：]",
+                stage2_text
+            )
+
+            # If no matches, try without colon
+            if not dimension_matches:
+                dimension_matches = re.findall(
+                    r"\d+\.\s*([A-Za-z][A-Za-z\s\-]+?)(?:（[^）]+）)?(?:\n|$)",
+                    stage2_text
+                )
+
+            # If still no matches, try matching known dimension keywords
+            if not dimension_matches:
+                known_dimensions = [
+                    "Multi-stage Transformation",
+                    "Cross-domain Integration",
+                    "Real-world Parameterization",
+                    "Conditional Branching",
+                    "Inverse Problem Design",
+                    "Uncertainty Integration",
+                    "Optimization Extension",
+                ]
+                dimension_matches = [
+                    dim for dim in known_dimensions
+                    if dim.lower() in stage2_text.lower()
+                ]
+
             applied_dimensions = [dim.strip() for dim in dimension_matches] if dimension_matches else []
 
             return RephraseAgentOutput(
@@ -130,16 +168,38 @@ def is_valid_mathematical_problem(question: str) -> bool:
     """
     Check if question is a valid mathematical problem.
 
+    Supports both English and Traditional Chinese formats.
+
     Args:
         question: The question text
 
     Returns:
         True if appears to be a math problem
     """
-    math_keywords = [
+    # English keywords
+    english_keywords = [
         "calculate", "find", "solve", "determine", "compute",
         "what is", "how many", "prove", "simplify",
         "x", "y", "equation", "number", "angle", "area", "volume",
-        "求", "計算", "解", "證明"  # Chinese keywords
+        "perimeter", "cost", "total", "maximum", "minimum",
     ]
-    return any(keyword in question.lower() for keyword in math_keywords)
+
+    # Chinese keywords (Traditional Chinese)
+    chinese_keywords = [
+        "求", "計算", "解", "證明", "判斷", "確定",
+        "多少", "幾何", "代數", "方程", "數字", "角度",
+        "面積", "體積", "周長", "成本", "總", "最大", "最小",
+        "長方形", "正方形", "三角形", "圓", "問",
+    ]
+
+    question_lower = question.lower()
+
+    # Check English keywords
+    if any(keyword in question_lower for keyword in english_keywords):
+        return True
+
+    # Check Chinese keywords (case-insensitive not needed for Chinese)
+    if any(keyword in question for keyword in chinese_keywords):
+        return True
+
+    return False
