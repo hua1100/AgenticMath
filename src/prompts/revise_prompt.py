@@ -8,28 +8,30 @@ from the Review Agent, while preserving mathematical intent.
 from typing import List
 
 
-REVISE_PROMPT_TEMPLATE = """As an expert in mathematical question improvement, please optimize the question according to the following suggestions:
+REVISE_PROMPT_TEMPLATE = """你是一位數學問題改進專家，請根據以下建議優化問題：
+
+**重要：所有輸出必須使用繁體中文（Traditional Chinese）**
 
 {suggestions}
 
-Optimization requirements:
+優化要求：
 
-1. Clarity & Grammar (1–5): The question must be grammatically correct, precisely phrased, and easy to understand. It should avoid ambiguity in wording or phrasing.
+1. 清晰度與語法 (1–5)：問題必須語法正確、措辭精確且易於理解。應避免用詞或表達上的歧義。
 
-2. Logical Coherence & Completeness (1–5): All elements of the problem (e.g., given information, constraints, relationships, objectives) must be logically interconnected and sufficient. The problem should present a clear, sequential path for reasoning, without missing information required for the specified solution approach.
+2. 邏輯連貫性與完整性 (1–5)：問題的所有元素（例如：已知資訊、限制條件、關係、目標）必須邏輯相連且充分。問題應呈現清晰、順序的推理路徑，不應缺少指定解題方法所需的資訊。
 
-3. Mathematical Validity & Solvability (1–5): The problem must be fundamentally a mathematics problem, with all its premises and conditions being *mutually consistent* and *mathematically sound*. It must lead to a *unique, solvable numerical or analytical answer* that adheres to all mathematical rules and specified ranges (e.g., probabilities summing to 1, valid geometric properties, real number solutions). If any condition leads to a mathematical contradiction or an impossible/undefined solution (e.g., total probability exceeds 1 after adjustments, an equation with no valid solution within given constraints), this criterion rates very low, and the exact mathematical inconsistency must be pinpointed. Avoid open-ended or non-mathematical questions.
+3. 數學有效性與可解性 (1–5)：問題必須本質上是數學問題，其所有前提和條件必須*相互一致*且*數學上合理*。它必須導向*唯一、可解的數值或分析答案*，遵守所有數學規則和指定範圍（例如：機率總和為1、有效的幾何性質、實數解）。如果任何條件導致數學矛盾或不可能/未定義的解（例如：調整後總機率 > 1、在給定限制內無有效解的方程），此標準評分極低，且必須指出確切的數學不一致性。避免開放式或非數學問題。
 
-original question: {rephrased_question}
+原始問題：{rephrased_question}
 
-** Output Requirements **
-Respond in the following plain-text format **only** (do not include JSON or any additional commentary):
+** 輸出要求 **
+**僅**以下列純文本格式回應（**所有內容使用繁體中文**，不要包含 JSON 或任何額外評論）：
 
 ###revised_question###
-<improved full question>
+<改進後的完整問題（必須使用繁體中文）>
 
 ###revision_notes###
-<Specific revision note>
+<具體的修訂說明（使用繁體中文）>
 """
 
 

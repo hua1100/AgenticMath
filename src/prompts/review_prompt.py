@@ -8,38 +8,41 @@ This prompt guides the LLM to evaluate math problems on three quality dimensions
 """
 
 
-REVIEW_PROMPT_TEMPLATE = """As a mathematics quality checker, your task is to rigorously assess whether a given mathematical question is high-quality and provide rewrite suggestions:
+REVIEW_PROMPT_TEMPLATE = """你是一位數學問題品質檢查專家，你的任務是嚴格評估給定的數學問題是否高品質，並提供改寫建議：
 
-1. Clarity & Grammar (1–5): The question must be grammatically correct, precisely phrased, and easy to understand. It should avoid ambiguity in wording or phrasing.
+**重要：所有輸出必須使用繁體中文（Traditional Chinese）**
 
-2. Logical Coherence & Completeness (1–5): All elements of the problem (e.g., given information, constraints, relationships, objectives) must be logically interconnected and sufficient. The problem should present a clear, sequential path for reasoning, without missing information required for the specified solution approach.
+1. 清晰度與語法 (1–5)：問題必須語法正確、措辭精確且易於理解。應避免用詞或表達上的歧義。
 
-3. Mathematical Validity & Solvability (1–5): The problem must be fundamentally a mathematics problem, with all its premises and conditions being *mutually consistent* and *mathematically sound*. It must lead to a *unique, solvable numerical or analytical answer* that adheres to all mathematical rules and specified ranges (e.g., probabilities summing to 1, valid geometric properties, real number solutions). If any condition leads to a mathematical contradiction or an impossible/undefined solution (e.g., total probability > 1 after adjustments, an equation with no valid solution within given constraints), this criterion rates very low, and the exact mathematical inconsistency must be pinpointed. Avoid open-ended or non-mathematical questions.
+2. 邏輯連貫性與完整性 (1–5)：問題的所有元素（例如：已知資訊、限制條件、關係、目標）必須邏輯相連且充分。問題應呈現清晰、順序的推理路徑，不應缺少指定解題方法所需的資訊。
 
-** Scoring Guidelines **:
-- Please rate the sample on a scale from 1 to 5 for each criterion, and return an overall rating on a scale from 1 to 5, where a higher score indicates higher level of quality.
+3. 數學有效性與可解性 (1–5)：問題必須本質上是數學問題，其所有前提和條件必須*相互一致*且*數學上合理*。它必須導向*唯一、可解的數值或分析答案*，遵守所有數學規則和指定範圍（例如：機率總和為1、有效的幾何性質、實數解）。如果任何條件導致數學矛盾或不可能/未定義的解（例如：調整後總機率 > 1、在給定限制內無有效解的方程），此標準評分極低，且必須指出確切的數學不一致性。避免開放式或非數學問題。
 
-Rephrased question: {rephrased_question}
+** 評分準則 **：
+- 請為每個標準以 1 到 5 的等級評分，並返回 1 到 5 的整體評分，分數越高表示品質越高。
 
-**Output Requirements**
-Respond in the following plain-text format **only** (do not include JSON or any additional commentary):
+改寫後的問題：{rephrased_question}
+
+**輸出要求**
+**僅**以下列純文本格式回應（**所有內容使用繁體中文**，不要包含 JSON 或任何額外評論）：
 
 ###thought###
-<Analytical reasoning addressing each criterion sequentially, especially for rephrased_question>
+<針對每個標準依序進行的分析推理，特別是針對改寫後的問題>
 
 ###rating_score###
-["<Clarity & Grammar score>", "<Logical Consistency score>", "<Mathematical Relevance & Solvability score>"]
+["<清晰度與語法分數>", "<邏輯連貫性分數>", "<數學有效性與可解性分數>"]
 
 ###suggestions###
-###Specific improvement 1###
-<Specific improvement 1>
-###Specific improvement 2###
-<Specific improvement 2>
-...more improvements if needed...
+###具體改進建議 1###
+<具體改進建議 1（使用繁體中文）>
+###具體改進建議 2###
+<具體改進建議 2（使用繁體中文）>
+...如需要可加入更多改進建議...
 
-Notice:
-- "rating_score" represents evaluate score of Rephrased question.
-- when generate "suggestions", please give more details and reasons for each improvement.
+注意：
+- "rating_score" 代表改寫後問題的評估分數
+- 生成 "suggestions" 時，請為每項改進提供更多細節和理由（使用繁體中文）
+- **所有分析、建議都必須使用繁體中文**
 """
 
 

@@ -8,40 +8,43 @@ into more complex versions through escalation dimensions.
 from typing import List
 
 
-REPHRASE_PROMPT_TEMPLATE = """Act as an expert mathematics educator specializing in problem complexity escalation. Systematically transform the given problem while preserving its core concepts, using the following framework:
+REPHRASE_PROMPT_TEMPLATE = """你是一位專精於提升數學問題複雜度的專家數學教育者。請系統化地轉換給定的問題，同時保留其核心概念，使用以下框架：
 
-**Stage 1: Problem Deconstruction**
-- Domain Identification: [Algebra/Geometry/Calculus/etc.]
-- Core Competencies: [List specific theorems/formulas/methods]
-- Baseline Difficulty: [Level 1–5 using Krathwohl's Cognitive Rigor Index]
+**重要：所有輸出必須使用繁體中文（Traditional Chinese）**
 
-**Stage 2: Escalation Protocol**
-Select ≥3 complexity dimensions from:
-1. Multi-stage Transformation: Designs a single, cohesive mathematical problem where the complete solution inherently demands multiple, sequentially dependent calculations. The output of one implicit intermediate step must serve as the essential and sole input for the next, creating a longer chain of necessary computational derivation for the solver to reach the definite final answer.
-2. Cross-domain Integration: Create hybrid problems combining ≥2 mathematical disciplines
-3. Real-world Parameterization: Embed contextual constraints with multivariate relationships
-4. Conditional Branching: Introduce layered constraints requiring decision-tree analysis
-5. Inverse Problem Design: Reverse-engineer given solutions to reconstruct premises
-6. Uncertainty Integration: Incorporate measurement errors/probabilistic factors
-7. Optimization Extension: Convert closed solutions into multi-objective optimization challenges
+**階段 1：問題解構（Problem Deconstruction）**
+- 領域識別：[代數/幾何/微積分/等等]
+- 核心能力：[列出具體定理/公式/方法]
+- 基準難度：[使用 Krathwohl 認知嚴謹度指數 1-5 級]
 
-**Stage 3: Revise question**
-- Must be a definitive mathematical problem: The question must require mathematical reasoning, calculation, or logical deduction.
-- Must have a unique and specific mathematical answer: The problem should lead to a single, verifiable numerical or analytical solution, avoiding open-ended questions, subjective evaluations, or non-mathematical tasks.
+**階段 2：複雜度提升協議（Escalation Protocol）**
+從以下維度中選擇 ≥3 個：
+1. Multi-stage Transformation（多階段轉換）：設計一個單一且連貫的數學問題，其完整解答本質上需要多個順序依賴的計算。一個隱含中間步驟的輸出必須作為下一個步驟的關鍵且唯一輸入，創建更長的計算推導鏈。
+2. Cross-domain Integration（跨領域整合）：創建結合 ≥2 個數學學科的混合問題
+3. Real-world Parameterization（實際情境參數化）：嵌入具有多變量關係的情境限制
+4. Conditional Branching（條件分支）：引入需要決策樹分析的分層限制
+5. Inverse Problem Design（逆向問題設計）：從給定解答反向工程重建前提
+6. Uncertainty Integration（不確定性整合）：納入測量誤差/機率因素
+7. Optimization Extension（優化擴展）：將封閉解轉換為多目標優化挑戰
 
-Please reply strictly in the following format:
+**階段 3：改寫問題**
+- 必須是明確的數學問題：問題必須需要數學推理、計算或邏輯推導
+- 必須有唯一且具體的數學答案：問題應該導向單一、可驗證的數值或分析解，避免開放式問題、主觀評估或非數學任務
+- **改寫後的問題必須使用繁體中文**
+
+請嚴格按照以下格式回覆（**所有內容使用繁體中文**）：
 Stage 1 #Problem Deconstruction#:
-<your analysis>
+<你的分析>
 
 Stage 2 #Escalation Protocol#:
-<your escalation strategy>
+<你的提升策略，明確列出應用的維度>
 
 Stage 3 #Finally Rewritten question#:
-<the rephrased problem>
+<改寫後的問題（必須使用繁體中文）>
 
-**Required Escalation Dimensions**: {escalation_dimensions}
+**要求應用的複雜度提升維度**: {escalation_dimensions}
 
-**Original Problem**:
+**原始問題**:
 {problem_content}
 """
 
