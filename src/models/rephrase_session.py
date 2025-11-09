@@ -3,13 +3,13 @@ RephraseSession model for tracking complete rephrase workflows.
 """
 
 from sqlalchemy import Column, String, Integer, Float, DateTime, Enum as SQLEnum, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from uuid import uuid4
 import enum
 
 from src.storage.database import Base
+from src.models.types import GUID
 
 
 class SessionStatus(str, enum.Enum):
@@ -38,15 +38,15 @@ class RephraseSession(Base):
 
     __tablename__ = "rephrase_sessions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid4, nullable=False)
     original_problem_id = Column(
-        UUID(as_uuid=True),
+        GUID(),
         ForeignKey("problems.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     final_problem_id = Column(
-        UUID(as_uuid=True), ForeignKey("problems.id", ondelete="SET NULL"), nullable=True
+        GUID(), ForeignKey("problems.id", ondelete="SET NULL"), nullable=True
     )
     escalation_dimensions = Column(JSON, nullable=False)  # List of strings
     iteration_count = Column(Integer, nullable=False, default=0)

@@ -3,13 +3,13 @@ Problem model for storing mathematical problems at any stage.
 """
 
 from sqlalchemy import Column, String, Integer, DateTime, Enum as SQLEnum, JSON, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from uuid import uuid4
 import enum
 
 from src.storage.database import Base
+from src.models.types import GUID
 
 
 class MathDomain(str, enum.Enum):
@@ -59,7 +59,7 @@ class Problem(Base):
 
     __tablename__ = "problems"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid4, nullable=False)
     content = Column(String, nullable=False)
     domain = Column(SQLEnum(MathDomain), nullable=False, index=True)
     competencies = Column(JSON, nullable=False)  # List of strings
@@ -67,10 +67,10 @@ class Problem(Base):
     source = Column(SQLEnum(ProblemSource), nullable=False, index=True)
     source_type = Column(SQLEnum(SourceType), nullable=False, index=True)
     parent_id = Column(
-        UUID(as_uuid=True), ForeignKey("problems.id", ondelete="SET NULL"), nullable=True, index=True
+        GUID(), ForeignKey("problems.id", ondelete="SET NULL"), nullable=True, index=True
     )
     uploaded_image_id = Column(
-        UUID(as_uuid=True),
+        GUID(),
         ForeignKey("uploaded_images.id", ondelete="SET NULL"),
         nullable=True,
         index=True,

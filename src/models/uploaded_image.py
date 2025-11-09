@@ -3,13 +3,13 @@ UploadedImage model for storing photo upload and OCR results.
 """
 
 from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Enum as SQLEnum, JSON
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from uuid import uuid4
 import enum
 
 from src.storage.database import Base
+from src.models.types import GUID
 
 
 class ImageFormat(str, enum.Enum):
@@ -41,7 +41,7 @@ class UploadedImage(Base):
 
     __tablename__ = "uploaded_images"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid4, nullable=False)
     file_path = Column(String(500), nullable=False, unique=True, index=True)
     file_size = Column(Integer, nullable=False)
     file_format = Column(SQLEnum(ImageFormat), nullable=False)
@@ -52,7 +52,7 @@ class UploadedImage(Base):
     diagram_description = Column(String(1000), nullable=True)
     preprocessing_applied = Column(JSON, nullable=False, default=list)
     ocr_processing_time_ms = Column(Integer, nullable=False)
-    problem_id = Column(UUID(as_uuid=True), nullable=True)  # Will add FK later
+    problem_id = Column(GUID(), nullable=True)  # Will add FK later
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
     # Relationship to Problem (one-to-one)

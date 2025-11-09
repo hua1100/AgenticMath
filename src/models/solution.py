@@ -3,12 +3,12 @@ Solution model for storing Solver Agent generated solutions.
 """
 
 from sqlalchemy import Column, String, DateTime, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from uuid import uuid4
 
 from src.storage.database import Base
+from src.models.types import GUID
 
 
 class Solution(Base):
@@ -26,9 +26,9 @@ class Solution(Base):
 
     __tablename__ = "solutions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid4, nullable=False)
     problem_id = Column(
-        UUID(as_uuid=True),
+        GUID(),
         ForeignKey("problems.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

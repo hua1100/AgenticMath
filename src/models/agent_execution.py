@@ -3,13 +3,13 @@ AgentExecution model for storing agent invocation history for traceability.
 """
 
 from sqlalchemy import Column, String, Integer, DateTime, Enum as SQLEnum, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from uuid import uuid4
 import enum
 
 from src.storage.database import Base
+from src.models.types import GUID
 
 
 class AgentType(str, enum.Enum):
@@ -41,10 +41,10 @@ class AgentExecution(Base):
 
     __tablename__ = "agent_executions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid4, nullable=False)
     agent_type = Column(SQLEnum(AgentType), nullable=False, index=True)
     session_id = Column(
-        UUID(as_uuid=True),
+        GUID(),
         ForeignKey("rephrase_sessions.id", ondelete="CASCADE"),
         nullable=True,
         index=True,

@@ -3,12 +3,12 @@ QualityAssessment model for storing Review Agent evaluations.
 """
 
 from sqlalchemy import Column, String, Float, DateTime, ForeignKey, JSON
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from uuid import uuid4
 
 from src.storage.database import Base
+from src.models.types import GUID
 
 
 class QualityAssessment(Base):
@@ -29,9 +29,9 @@ class QualityAssessment(Base):
 
     __tablename__ = "quality_assessments"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid4, nullable=False)
     problem_id = Column(
-        UUID(as_uuid=True),
+        GUID(),
         ForeignKey("problems.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
