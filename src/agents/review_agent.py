@@ -12,10 +12,13 @@ It provides detailed thought process, scores, and specific improvement suggestio
 import logging
 from typing import Optional
 from datetime import datetime
+from uuid import uuid4
+from sqlalchemy.orm import Session
 
 from src.agents.llm_client import LLMClient
 from src.prompts.review_prompt import create_review_prompt
 from src.parsers.review_parser import ReviewParser, ReviewAgentOutput, ReviewParseError
+from src.models.agent_execution import AgentExecution, AgentType
 
 logger = logging.getLogger(__name__)
 
@@ -38,14 +41,16 @@ class ReviewAgent:
         ["Add units to final answer", "Clarify if approximate solutions are acceptable"]
     """
 
-    def __init__(self, llm_client: LLMClient):
+    def __init__(self, llm_client: LLMClient, db: Optional[Session] = None):
         """
         Initialize Review Agent.
 
         Args:
             llm_client: LLM client for calling GPT-4
+            db: Database session for logging. If None, logging is skipped.
         """
         self.llm_client = llm_client
+        self.db = db
         self.parser = ReviewParser()
         logger.info("Review Agent initialized")
 
@@ -81,40 +86,103 @@ class ReviewAgent:
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.3,  # Lower temperature for more consistent scoring
             )
-        except Exception as e:
-            logger.error(f"LLM call failed: {e}")
-            raise
 
-        execution_time_ms = int((datetime.now() - start_time).total_seconds() * 1000)
-        raw_response = response["content"]
+            execution_time_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+            raw_response = response["content"]
 
-        logger.info(f"LLM response received in {execution_time_ms}ms")
+            logger.info(f"LLM response received in {execution_time_ms}ms")
 
-        # Parse output
-        try:
+            # Parse output
             parsed_output = self.parser.parse(raw_response)
+
+            # Validate output
+            self._validate_output(parsed_output)
+
+            # Log to database if db session is available
+            if self.db:
+                execution_record = AgentExecution(
+                    id=uuid4(),
+                    agent_type=AgentType.REVIEW,
+                    session_id=None,  # Will be set by pipeline if part of a session
+                    input_data={
+                        "rephrased_question": rephrased_question,
+                    },
+                    output_data={
+                        "clarity_grammar_score": parsed_output.clarity_grammar_score,
+                        "logical_coherence_score": parsed_output.logical_coherence_score,
+                        "mathematical_validity_score": parsed_output.mathematical_validity_score,
+                        "overall_score": parsed_output.overall_score,
+                        "thought_process": parsed_output.thought_process,
+                        "suggestions": parsed_output.suggestions,
+                    },
+                    prompt_template=prompt,
+                    raw_llm_response=raw_response,
+                    execution_time_ms=execution_time_ms,
+                    llm_model=response.get("model", "gpt-4o"),
+                )
+                self.db.add(execution_record)
+                self.db.commit()
+
+                logger.info(
+                    f"Review execution logged: {execution_record.id}, "
+                    f"{execution_time_ms}ms"
+                )
+
+            logger.info(
+                f"Review complete: Overall score {parsed_output.overall_score}/5.0, "
+                f"{len(parsed_output.suggestions)} suggestions"
+            )
+
+            return parsed_output
+
         except ReviewParseError as e:
+            execution_time_ms = int((datetime.now() - start_time).total_seconds() * 1000)
             logger.error(f"Failed to parse LLM output: {e}")
-            logger.debug(f"Raw LLM response:\n{raw_response}")
+            logger.debug(f"Raw LLM response:\n{raw_response if 'raw_response' in locals() else 'N/A'}")
+
+            # Log failure to database if available
+            if self.db:
+                try:
+                    execution_record = AgentExecution(
+                        id=uuid4(),
+                        agent_type=AgentType.REVIEW,
+                        session_id=None,
+                        input_data={"rephrased_question": rephrased_question},
+                        output_data={"error": str(e)},
+                        prompt_template=prompt,
+                        raw_llm_response=raw_response if 'raw_response' in locals() else None,
+                        execution_time_ms=execution_time_ms,
+                        llm_model="gpt-4o",
+                    )
+                    self.db.add(execution_record)
+                    self.db.commit()
+                except Exception as log_error:
+                    logger.warning(f"Failed to log error to database: {log_error}")
             raise
 
-        # Validate output
-        self._validate_output(parsed_output)
+        except Exception as e:
+            execution_time_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+            logger.error(f"LLM call failed: {e}")
 
-        logger.info(
-            f"Review complete: Overall score {parsed_output.overall_score}/5.0, "
-            f"{len(parsed_output.suggestions)} suggestions"
-        )
-
-        # TODO: Database logging
-        # Note: AgentExecution model needs to be updated to support:
-        # - output_data (JSON field for parsed output)
-        # - prompt_template (text field)
-        # - execution_time_ms (integer field)
-        # Current focus: Core review functionality
-        # Database integration to be completed in next iteration
-
-        return parsed_output
+            # Log failure to database if available
+            if self.db:
+                try:
+                    execution_record = AgentExecution(
+                        id=uuid4(),
+                        agent_type=AgentType.REVIEW,
+                        session_id=None,
+                        input_data={"rephrased_question": rephrased_question},
+                        output_data={"error": str(e)},
+                        prompt_template=prompt,
+                        raw_llm_response=None,
+                        execution_time_ms=execution_time_ms,
+                        llm_model="gpt-4o",
+                    )
+                    self.db.add(execution_record)
+                    self.db.commit()
+                except Exception as log_error:
+                    logger.warning(f"Failed to log error to database: {log_error}")
+            raise
 
     def _validate_input(self, rephrased_question: str) -> None:
         """

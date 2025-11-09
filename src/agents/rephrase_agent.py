@@ -96,9 +96,7 @@ class RephraseAgent:
         # Create prompt
         prompt = create_rephrase_prompt(problem_content, escalation_dimensions)
 
-        # TODO: Database logging implementation to be completed in next iteration
-        # AgentExecution model needs fields: output_data (required), prompt_template (required), execution_time_ms (required)
-        # Current implementation focuses on core rephrase functionality
+        # Record execution start time
         execution_start = datetime.utcnow()
 
         try:
@@ -109,13 +107,48 @@ class RephraseAgent:
             raw_output = response["content"]
             token_usage = response["usage"]
 
+            # Calculate execution time
+            execution_end = datetime.utcnow()
+            execution_time_ms = int((execution_end - execution_start).total_seconds() * 1000)
+
             # Parse output
             parsed_output = self.parser.parse(raw_output)
 
             # Validate output
             self._validate_output(parsed_output, escalation_dimensions)
 
-            # TODO: Log to database when AgentExecution schema is updated
+            # Log to database if db session is available
+            if self.db:
+                execution_record = AgentExecution(
+                    id=uuid4(),
+                    agent_type=AgentType.REPHRASE,
+                    session_id=None,  # Will be set by pipeline if part of a session
+                    input_data={
+                        "problem_content": problem_content,
+                        "escalation_dimensions": escalation_dimensions,
+                        "problem_id": str(problem_id) if problem_id else None,
+                        "domain": domain.value if domain else None,
+                        "target_difficulty": target_difficulty,
+                    },
+                    output_data={
+                        "rephrased_problem": parsed_output.stage3_rewritten_question,
+                        "identified_domain": parsed_output.identified_domain,
+                        "applied_dimensions": parsed_output.applied_dimensions,
+                        "expected_difficulty": parsed_output.expected_difficulty,
+                        "reasoning": parsed_output.stage1_reasoning,
+                    },
+                    prompt_template=prompt,
+                    raw_llm_response=raw_output,
+                    execution_time_ms=execution_time_ms,
+                    llm_model=response.get("model", "gpt-4o"),
+                )
+                self.db.add(execution_record)
+                self.db.commit()
+
+                logger.info(
+                    f"Rephrase execution logged: {execution_record.id}, "
+                    f"{execution_time_ms}ms"
+                )
 
             logger.info(
                 f"Rephrase successful: {parsed_output.identified_domain}, "
@@ -126,7 +159,33 @@ class RephraseAgent:
             return parsed_output
 
         except Exception as e:
-            # TODO: Log failure to database
+            # Calculate execution time for failed execution
+            execution_end = datetime.utcnow()
+            execution_time_ms = int((execution_end - execution_start).total_seconds() * 1000)
+
+            # Log failure to database if available
+            if self.db:
+                try:
+                    execution_record = AgentExecution(
+                        id=uuid4(),
+                        agent_type=AgentType.REPHRASE,
+                        session_id=None,
+                        input_data={
+                            "problem_content": problem_content,
+                            "escalation_dimensions": escalation_dimensions,
+                            "problem_id": str(problem_id) if problem_id else None,
+                        },
+                        output_data={"error": str(e)},
+                        prompt_template=prompt,
+                        raw_llm_response=None,
+                        execution_time_ms=execution_time_ms,
+                        llm_model="gpt-4o",
+                    )
+                    self.db.add(execution_record)
+                    self.db.commit()
+                except Exception as log_error:
+                    logger.warning(f"Failed to log error to database: {log_error}")
+
             logger.error(f"Rephrase failed: {e}")
             raise
 

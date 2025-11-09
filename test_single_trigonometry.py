@@ -35,19 +35,20 @@ from src.storage.database import Base
 from src.models.problem import Problem, ProblemSource, MathDomain, SourceType
 from src.models.rephrase_session import RephraseSession
 from src.models.quality_assessment import QualityAssessment
+from src.models.agent_execution import AgentExecution
 from src.agents.llm_client import LLMClient, LLMConfig
 from src.orchestration.crewai_pipeline import CrewAIPipeline
 
-# 設置內存資料庫
-print("💾 設置內存資料庫...")
-engine = create_engine("sqlite:///:memory:")
+# 設置檔案資料庫（保存測試資料）
+print("💾 設置資料庫（test_results.db）...")
+db_path = project_root / "test_results.db"
+engine = create_engine(f"sqlite:///{db_path}")
 
-# 只創建測試需要的表（避免 PostgreSQL UUID 類型兼容性問題）
-
-# 創建需要的表
+# 創建所有需要的表
 Problem.__table__.create(engine, checkfirst=True)
 RephraseSession.__table__.create(engine, checkfirst=True)
 QualityAssessment.__table__.create(engine, checkfirst=True)
+AgentExecution.__table__.create(engine, checkfirst=True)
 
 Session = sessionmaker(bind=engine)
 db_session = Session()

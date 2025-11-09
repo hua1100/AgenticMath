@@ -6,8 +6,10 @@ from the Review Agent, addressing quality issues while preserving mathematical i
 """
 
 import logging
-from typing import List
+from typing import List, Optional
 from datetime import datetime
+from uuid import uuid4
+from sqlalchemy.orm import Session
 
 from src.agents.llm_client import LLMClient
 from src.prompts.revise_prompt import create_revise_prompt
@@ -19,6 +21,7 @@ from src.parsers.revise_parser import (
     validate_revision_changes,
     validate_revision_length,
 )
+from src.models.agent_execution import AgentExecution, AgentType
 
 logger = logging.getLogger(__name__)
 
@@ -45,14 +48,16 @@ class ReviseAgent:
         rounded to two decimal places, with units.
     """
 
-    def __init__(self, llm_client: LLMClient):
+    def __init__(self, llm_client: LLMClient, db: Optional[Session] = None):
         """
         Initialize Revise Agent.
 
         Args:
             llm_client: LLM client for calling GPT-4
+            db: Database session for logging. If None, logging is skipped.
         """
         self.llm_client = llm_client
+        self.db = db
         self.parser = ReviseParser()
         logger.info("Revise Agent initialized")
 
@@ -93,45 +98,111 @@ class ReviseAgent:
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.3,  # Lower temperature for consistent improvements
             )
-        except Exception as e:
-            logger.error(f"LLM call failed: {e}")
-            raise
 
-        execution_time_ms = int((datetime.now() - start_time).total_seconds() * 1000)
-        raw_response = response["content"]
+            execution_time_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+            raw_response = response["content"]
 
-        logger.info(f"LLM response received in {execution_time_ms}ms")
+            logger.info(f"LLM response received in {execution_time_ms}ms")
 
-        # Parse output
-        try:
+            # Parse output
             parsed_output = self.parser.parse(raw_response)
+
+            # Validate output
+            self._validate_output(
+                original=rephrased_question,
+                revised=parsed_output.revised_question,
+                notes=parsed_output.revision_notes
+            )
+
+            # Log to database if db session is available
+            if self.db:
+                execution_record = AgentExecution(
+                    id=uuid4(),
+                    agent_type=AgentType.REVISE,
+                    session_id=None,  # Will be set by pipeline if part of a session
+                    input_data={
+                        "rephrased_question": rephrased_question,
+                        "suggestions": suggestions,
+                    },
+                    output_data={
+                        "revised_question": parsed_output.revised_question,
+                        "revision_notes": parsed_output.revision_notes,
+                    },
+                    prompt_template=prompt,
+                    raw_llm_response=raw_response,
+                    execution_time_ms=execution_time_ms,
+                    llm_model=response.get("model", "gpt-4o"),
+                )
+                self.db.add(execution_record)
+                self.db.commit()
+
+                logger.info(
+                    f"Revise execution logged: {execution_record.id}, "
+                    f"{execution_time_ms}ms"
+                )
+
+            logger.info(
+                f"Revision complete: "
+                f"question length {len(rephrased_question)} -> {len(parsed_output.revised_question)}, "
+                f"notes length {len(parsed_output.revision_notes)}"
+            )
+
+            return parsed_output
+
         except ReviseParseError as e:
+            execution_time_ms = int((datetime.now() - start_time).total_seconds() * 1000)
             logger.error(f"Failed to parse LLM output: {e}")
-            logger.debug(f"Raw LLM response:\n{raw_response}")
+            logger.debug(f"Raw LLM response:\n{raw_response if 'raw_response' in locals() else 'N/A'}")
+
+            # Log failure to database if available
+            if self.db:
+                try:
+                    execution_record = AgentExecution(
+                        id=uuid4(),
+                        agent_type=AgentType.REVISE,
+                        session_id=None,
+                        input_data={
+                            "rephrased_question": rephrased_question,
+                            "suggestions": suggestions,
+                        },
+                        output_data={"error": str(e)},
+                        prompt_template=prompt,
+                        raw_llm_response=raw_response if 'raw_response' in locals() else None,
+                        execution_time_ms=execution_time_ms,
+                        llm_model="gpt-4o",
+                    )
+                    self.db.add(execution_record)
+                    self.db.commit()
+                except Exception as log_error:
+                    logger.warning(f"Failed to log error to database: {log_error}")
             raise
 
-        # Validate output
-        self._validate_output(
-            original=rephrased_question,
-            revised=parsed_output.revised_question,
-            notes=parsed_output.revision_notes
-        )
+        except Exception as e:
+            execution_time_ms = int((datetime.now() - start_time).total_seconds() * 1000)
+            logger.error(f"LLM call failed: {e}")
 
-        logger.info(
-            f"Revision complete: "
-            f"question length {len(rephrased_question)} -> {len(parsed_output.revised_question)}, "
-            f"notes length {len(parsed_output.revision_notes)}"
-        )
-
-        # TODO: Database logging
-        # Note: AgentExecution model needs to be updated to support:
-        # - output_data (JSON field for parsed output)
-        # - prompt_template (text field)
-        # - execution_time_ms (integer field)
-        # Current focus: Core revise functionality
-        # Database integration to be completed in next iteration
-
-        return parsed_output
+            # Log failure to database if available
+            if self.db:
+                try:
+                    execution_record = AgentExecution(
+                        id=uuid4(),
+                        agent_type=AgentType.REVISE,
+                        session_id=None,
+                        input_data={
+                            "rephrased_question": rephrased_question,
+                            "suggestions": suggestions,
+                        },
+                        output_data={"error": str(e)},
+                        prompt_template=prompt,
+                        raw_llm_response=None,
+                        execution_time_ms=execution_time_ms,
+                        llm_model="gpt-4o",
+                    )
+                    self.db.add(execution_record)
+                    self.db.commit()
+                except Exception as log_error:
+                    logger.warning(f"Failed to log error to database: {log_error}")
+            raise
 
     def _validate_input(self, rephrased_question: str, suggestions: List[str]) -> None:
         """
