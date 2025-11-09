@@ -37,6 +37,7 @@ from src.models.quality_assessment import QualityAssessment
 from src.models.agent_execution import AgentExecution
 from src.agents.llm_client import LLMClient, LLMConfig
 from src.orchestration.crewai_pipeline import CrewAIPipeline
+from src.utils.latex_formatter import format_math_for_terminal
 
 # 設置檔案資料庫（保存測試資料）
 print("💾 設置資料庫（test_results.db）...")
@@ -187,6 +188,8 @@ for idx, prob_data in enumerate(test_problems, 1):
 
         print(f"\n📝 改寫後的問題：")
         question = result['final_question']
+        # 格式化 LaTeX 数学符号，使其在终端更易读
+        question = format_math_for_terminal(question)
         # 格式化輸出，每行最多76個字符
         words = question.split()
         line = "   "

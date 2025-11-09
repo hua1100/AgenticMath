@@ -37,10 +37,10 @@ logger = logging.getLogger(__name__)
 class AgentToolkit:
     """Toolkit wrapping our existing agents as CrewAI tools."""
 
-    def __init__(self, llm_client: LLMClient):
-        self.rephrase_agent = RephraseAgent(llm_client=llm_client)
-        self.review_agent = ReviewAgent(llm_client=llm_client)
-        self.revise_agent = ReviseAgent(llm_client=llm_client)
+    def __init__(self, llm_client: LLMClient, db_session: Optional[Session] = None):
+        self.rephrase_agent = RephraseAgent(llm_client=llm_client, db=db_session)
+        self.review_agent = ReviewAgent(llm_client=llm_client, db=db_session)
+        self.revise_agent = ReviseAgent(llm_client=llm_client, db=db_session)
 
     @tool("Rephrase Math Problem")
     def rephrase_problem(self, problem_content: str, escalation_dimensions: str) -> str:
@@ -188,7 +188,7 @@ class CrewAIPipeline:
         self.max_iterations = max_iterations
 
         # Initialize toolkit
-        self.toolkit = AgentToolkit(llm_client=llm_client)
+        self.toolkit = AgentToolkit(llm_client=llm_client, db_session=db_session)
 
         logger.info(
             f"CrewAI Pipeline initialized: threshold={quality_threshold}, "
