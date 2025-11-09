@@ -1,0 +1,28 @@
+# CrewAI Pipeline 最小依賴
+# 只包含測試 Phase 2 (Rephrase Pipeline) 所需的依賴
+
+# Core AI/LLM
+crewai>=0.1.55
+langchain>=0.1.0
+langchain-openai>=0.0.5
+openai>=1.10.0
+
+# Data validation
+pydantic==2.6.0
+pydantic-settings==2.1.0
+
+# Database
+sqlalchemy==2.0.25
+alembic==1.13.1
+
+# Utilities
+python-dotenv==1.0.1
+tenacity==8.2.3
+python-dateutil==2.8.2
+pytz==2024.1
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
