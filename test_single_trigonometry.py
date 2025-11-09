@@ -82,7 +82,7 @@ original_problem = Problem(
     competencies=["trigonometry", "geometric_reasoning"],
     baseline_difficulty=1,
     source=ProblemSource.ORIGINAL,
-    source_type=SourceType.MANUAL,
+    source_type=SourceType.MANUAL_TEXT,
 )
 db_session.add(original_problem)
 db_session.commit()

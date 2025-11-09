@@ -145,7 +145,7 @@ for idx, prob_data in enumerate(test_problems, 1):
         competencies=["trigonometry", "geometric_reasoning"],
         baseline_difficulty=prob_data["difficulty"],
         source=ProblemSource.ORIGINAL,
-        source_type=SourceType.MANUAL,
+        source_type=SourceType.MANUAL_TEXT,
     )
     db_session.add(original_problem)
     db_session.commit()
