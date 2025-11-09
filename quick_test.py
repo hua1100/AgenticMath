@@ -172,7 +172,7 @@ try:
 
     # 成本估算
     total_tokens = llm_client.total_tokens_used
-    estimated_cost = llm_client.estimated_cost
+    estimated_cost = llm_client.total_cost_usd
     print(f"\n💰 本次測試成本：")
     print(f"   Token 使用量: {total_tokens:,} tokens")
     print(f"   估算成本: ${estimated_cost:.4f} USD")

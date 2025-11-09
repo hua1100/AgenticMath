@@ -105,7 +105,7 @@ def test_rephrase_agent():
         # Show usage stats from LLM client
         print(f"\n📈 Token Usage:")
         print(f"   Total Tokens: {llm_client.total_tokens_used:,}")
-        print(f"   Estimated Cost: ${llm_client.estimated_cost:.4f}")
+        print(f"   Estimated Cost: ${llm_client.total_cost_usd:.4f}")
 
         return True
 
@@ -168,7 +168,7 @@ def test_review_agent():
 
         print(f"\n📈 Token Usage:")
         print(f"   Total Tokens: {llm_client.total_tokens_used:,}")
-        print(f"   Estimated Cost: ${llm_client.estimated_cost:.4f}")
+        print(f"   Estimated Cost: ${llm_client.total_cost_usd:.4f}")
 
         return True
 
@@ -227,7 +227,7 @@ def test_revise_agent():
 
         print(f"\n📈 Token Usage:")
         print(f"   Total Tokens: {llm_client.total_tokens_used:,}")
-        print(f"   Estimated Cost: ${llm_client.estimated_cost:.4f}")
+        print(f"   Estimated Cost: ${llm_client.total_cost_usd:.4f}")
 
         return True
 
