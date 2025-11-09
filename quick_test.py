@@ -38,13 +38,20 @@ print("="*80)
 print("\n📦 導入模組...")
 from src.storage.database import Base
 from src.models.problem import Problem, ProblemSource, MathDomain, SourceType
+from src.models.rephrase_session import RephraseSession
+from src.models.quality_assessment import QualityAssessment
 from src.agents.llm_client import LLMClient, LLMConfig
 from src.orchestration.crewai_pipeline import CrewAIPipeline
 
 # 設置內存資料庫
 print("💾 設置內存資料庫...")
 engine = create_engine("sqlite:///:memory:")
-Base.metadata.create_all(engine)
+
+# 只創建測試需要的表（避免 PostgreSQL UUID 類型兼容性問題）
+Problem.__table__.create(engine, checkfirst=True)
+RephraseSession.__table__.create(engine, checkfirst=True)
+QualityAssessment.__table__.create(engine, checkfirst=True)
+
 Session = sessionmaker(bind=engine)
 db_session = Session()
 print("   ✓ 資料庫就緒")
