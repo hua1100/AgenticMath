@@ -102,13 +102,10 @@ def test_rephrase_agent():
         print(f"   {result.stage3_rewritten_question}")
         print(f"\n💡 Applied Dimensions: {', '.join(result.applied_dimensions)}")
 
-        # Show usage stats
-        stats = agent.get_usage_stats()
+        # Show usage stats from LLM client
         print(f"\n📈 Token Usage:")
-        print(f"   Prompt: {stats['prompt_tokens']}")
-        print(f"   Completion: {stats['completion_tokens']}")
-        print(f"   Total: {stats['total_tokens']}")
-        print(f"   Cost: ${stats['estimated_cost_usd']:.4f}")
+        print(f"   Total Tokens: {llm_client.total_tokens_used:,}")
+        print(f"   Estimated Cost: ${llm_client.estimated_cost:.4f}")
 
         return True
 
@@ -169,8 +166,9 @@ def test_review_agent():
         else:
             print(f"\n✨ No suggestions - problem is excellent!")
 
-        stats = agent.get_usage_stats()
-        print(f"\n📈 Cost: ${stats['estimated_cost_usd']:.4f}")
+        print(f"\n📈 Token Usage:")
+        print(f"   Total Tokens: {llm_client.total_tokens_used:,}")
+        print(f"   Estimated Cost: ${llm_client.estimated_cost:.4f}")
 
         return True
 
@@ -227,8 +225,9 @@ def test_revise_agent():
         print(f"\n📋 Revision Notes:")
         print(f"   {result.revision_notes}")
 
-        stats = agent.get_usage_stats()
-        print(f"\n📈 Cost: ${stats['estimated_cost_usd']:.4f}")
+        print(f"\n📈 Token Usage:")
+        print(f"   Total Tokens: {llm_client.total_tokens_used:,}")
+        print(f"   Estimated Cost: ${llm_client.estimated_cost:.4f}")
 
         return True
 
