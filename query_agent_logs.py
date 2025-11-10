@@ -240,7 +240,7 @@ def export_full_review_output(execution_id):
             raw_llm_response,
             prompt_template
         FROM agent_executions
-        WHERE id = ? AND agent_type = 'review'
+        WHERE id = ? AND agent_type = 'REVIEW'
     """, (execution_id,))
 
     result = cursor.fetchone()
