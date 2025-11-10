@@ -82,12 +82,26 @@ class RephraseParser:
             stage3_text = stage3_match.group(1).strip()
 
             # Extract domain from stage1
-            domain_match = re.search(r"Domain Identification:\s*(\w+)", stage1_text, re.IGNORECASE)
-            identified_domain = domain_match.group(1) if domain_match else "Unknown"
+            # Support both English and Chinese formats
+            domain_match = re.search(
+                r"(?:Domain Identification|領域識別)[:：]\s*(.+?)(?=\n|$)",
+                stage1_text,
+                re.IGNORECASE
+            )
+            if domain_match:
+                identified_domain = domain_match.group(1).strip()
+                # Clean up common patterns like [代數/幾何/微積分/等等]
+                identified_domain = re.sub(r'[\[\]]', '', identified_domain)
+                # Take first word if multiple separated by /
+                if '/' in identified_domain:
+                    identified_domain = identified_domain.split('/')[0].strip()
+            else:
+                identified_domain = "Unknown"
 
             # Extract competencies from stage1
+            # Support both English and Chinese formats
             competencies_match = re.search(
-                r"Core Competencies:\s*(.*?)(?=\n|Baseline Difficulty|$)",
+                r"(?:Core Competencies|核心能力)[:：]\s*(.*?)(?=\n|Baseline Difficulty|基準難度|$)",
                 stage1_text,
                 re.DOTALL | re.IGNORECASE
             )
