@@ -151,12 +151,12 @@ def query_recent_executions(limit=10):
         print("❌ 沒有找到任何執行記錄")
         return
 
-    print(f"\n{'#':<4} {'Agent 類型':<15} {'執行時間':<12} {'模型':<15} {'時間':<25}")
-    print("-" * 80)
+    print(f"\n{'#':<4} {'ID':<38} {'Agent':<10} {'時間':<10} {'時間戳':<20}")
+    print("-" * 90)
 
     for idx, row in enumerate(results, 1):
-        print(f"{idx:<4} {row['agent_type']:<15} {row['execution_time_ms']:>10}ms "
-              f"{row['llm_model']:<15} {row['created_at']:<25}")
+        print(f"{idx:<4} {row['id']:<38} {row['agent_type']:<10} "
+              f"{row['execution_time_ms']:>8}ms {row['created_at']:<20}")
 
 def query_rephrase_sessions():
     """查詢 Rephrase Sessions"""
