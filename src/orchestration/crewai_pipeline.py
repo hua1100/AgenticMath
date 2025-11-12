@@ -17,7 +17,6 @@ from uuid import UUID, uuid4
 from sqlalchemy.orm import Session
 
 from crewai import Agent, Task, Crew, Process
-from crewai.tools import tool
 
 from src.agents.llm_client import LLMClient
 from src.agents.rephrase_agent import RephraseAgent
@@ -42,7 +41,6 @@ class AgentToolkit:
         self.review_agent = ReviewAgent(llm_client=llm_client, db=db_session)
         self.revise_agent = ReviseAgent(llm_client=llm_client, db=db_session)
 
-    @tool("Rephrase Math Problem")
     def rephrase_problem(self, problem_content: str, escalation_dimensions: str) -> str:
         """
         改寫數學問題，提升複雜度。
@@ -81,7 +79,6 @@ class AgentToolkit:
 {', '.join(result.applied_dimensions)}
 """
 
-    @tool("Review Problem Quality")
     def review_problem(self, question: str) -> str:
         """
         評估問題品質，給出分數和建議。
@@ -114,7 +111,6 @@ class AgentToolkit:
 {result.thought_process[:200]}...
 """
 
-    @tool("Revise Problem")
     def revise_problem(self, question: str, suggestions: str) -> str:
         """
         根據建議改進問題。

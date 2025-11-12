@@ -4,7 +4,7 @@
 # ============================================================================
 # Agent Framework
 # ============================================================================
-crewai==0.55.2  # Upgraded for tool decorator support
+crewai==0.28.8
 langchain==0.1.16
 langchain-openai==0.0.5
 embedchain==0.1.98  # Pin to avoid langchain version conflicts
