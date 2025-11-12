@@ -10,11 +10,36 @@ This module provides OCR functionality with support for:
 
 import os
 import time
+import signal
 from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional
+from contextlib import contextmanager
 import numpy as np
 from paddleocr import PaddleOCR
 import cv2
+
+
+class OCRTimeoutError(Exception):
+    """Raised when OCR operation times out."""
+    pass
+
+
+@contextmanager
+def timeout_context(seconds: int):
+    """Context manager for timeout using signal (Unix/Mac only)."""
+    def timeout_handler(signum, frame):
+        raise OCRTimeoutError(f"OCR operation timed out after {seconds} seconds")
+
+    # Set the signal handler
+    old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(seconds)
+
+    try:
+        yield
+    finally:
+        # Reset the alarm and restore old handler
+        signal.alarm(0)
+        signal.signal(signal.SIGALRM, old_handler)
 
 
 class OCRConfig:
@@ -145,9 +170,22 @@ class OCRExtractor:
         # Initialize OCR engine
         self._initialize_ocr()
 
-        # Perform OCR
+        # Perform OCR with timeout protection (60 seconds)
         # Note: Configuration parameters are set during PaddleOCR initialization
-        result = self._ocr.ocr(str(image_path))
+        try:
+            with timeout_context(60):
+                result = self._ocr.ocr(str(image_path))
+        except OCRTimeoutError as e:
+            return {
+                "success": False,
+                "text": "",
+                "text_regions": [],
+                "confidence_score": 0.0,
+                "processing_time_ms": int((time.time() - start_time) * 1000),
+                "num_regions": 0,
+                "has_text": False,
+                "error": str(e)
+            }
 
         # Parse results
         text_regions = []
