@@ -124,12 +124,15 @@ class OCRExtractor:
         if self._ocr is None:
             self._ocr = PaddleOCR(
                 lang=self.config.lang,
+                use_angle_cls=False,  # 禁用角度分類器，加速處理
                 use_textline_orientation=False,  # Disable to avoid model downloads in offline environment
                 use_doc_orientation_classify=False,  # Disable doc preprocessor to avoid model downloads
                 use_doc_unwarping=False,  # Disable doc unwarping to avoid model downloads
                 text_det_thresh=self.config.text_det_thresh,
                 text_det_box_thresh=self.config.text_det_box_thresh,
                 text_recognition_batch_size=self.config.text_recognition_batch_size,
+                show_log=False,  # 禁用詳細日誌輸出
+                use_gpu=False,  # 明確使用 CPU
             )
 
     def extract(self, image_path: str | Path) -> Dict[str, Any]:
