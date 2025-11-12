@@ -47,7 +47,7 @@ class OCRConfig:
 
     def __init__(
         self,
-        lang: str = "chinese_cht",
+        lang: str = "ch",  # 改用簡體中文，繁體中文模型在某些環境會卡住
         use_textline_orientation: bool = True,
         text_det_thresh: float = 0.3,
         text_det_box_thresh: float = 0.6,
@@ -57,7 +57,7 @@ class OCRConfig:
         Initialize OCR configuration.
 
         Args:
-            lang: Language model to use ('chinese_cht' for Traditional Chinese)
+            lang: Language model to use ('ch' for Chinese, 'en' for English)
             use_textline_orientation: Enable automatic text orientation detection
             text_det_thresh: Text detection threshold (0-1, lower = more sensitive)
             text_det_box_thresh: Bounding box threshold (0-1)
