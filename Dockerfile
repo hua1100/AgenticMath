@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
     libsm6 \
     libxext6 \
     libxrender-dev \
-    libgl1-mesa-glx \
+    libgl1 \
     libgthread-2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
