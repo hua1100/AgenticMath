@@ -163,7 +163,10 @@ class DiagramAnalyzer:
                     "Set OPENAI_API_KEY environment variable or pass to config."
                 )
 
-            self.client = OpenAI(api_key=self.config.openai_api_key)
+            self.client = OpenAI(
+                api_key=self.config.openai_api_key,
+                timeout=30.0  # 30 秒超時，避免無限等待
+            )
 
     def analyze(
         self,
