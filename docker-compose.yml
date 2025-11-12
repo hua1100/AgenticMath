@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  agenticmath:
+    build: .
+    container_name: agenticmath
+    volumes:
+      # Mount code for development
+      - .:/app
+      # Persist PaddleOCR models
+      - paddleocr-models:/root/.paddleocr
+      # Mount test fixtures
+      - ./tests/fixtures:/app/tests/fixtures
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PYTHONPATH=/app
+    command: python test_full_pipeline.py /app/tests/fixtures/diagrams/test.png 3 3
+    # Keep container running for interactive use
+    # command: tail -f /dev/null
+
+  # Optional: PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: agenticmath-db
+    environment:
+      - POSTGRES_DB=agenticmath
+      - POSTGRES_USER=agenticmath
+      - POSTGRES_PASSWORD=agenticmath
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  paddleocr-models:
+  postgres-data:
