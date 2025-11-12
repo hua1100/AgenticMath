@@ -23,6 +23,7 @@ from src.orchestration.user_driven_generator import (
 )
 from src.agents.rephrase_agent import RephraseAgent
 from src.agents.review_agent import ReviewAgent
+from src.agents.revise_agent import ReviseAgent
 from src.orchestration.iteration_manager import IterationManager
 from src.agents.llm_client import LLMClient
 
@@ -108,7 +109,14 @@ class PhotoToProblemsOrchestrator:
             llm_client=self.llm_client,
             db=db_session
         )
-        self.iteration_manager = IterationManager()
+        self.revise_agent = ReviseAgent(
+            llm_client=self.llm_client,
+            db=db_session
+        )
+        self.iteration_manager = IterationManager(
+            review_agent=self.review_agent,
+            revise_agent=self.revise_agent
+        )
 
         # 初始化生成器
         self.problem_generator = ProblemGenerator(
