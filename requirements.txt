@@ -13,6 +13,7 @@ embedchain==0.1.98  # Pin to avoid langchain version conflicts
 # LLM Providers
 # ============================================================================
 openai==1.25.2
+httpx==0.27.0  # Fix compatibility with openai 1.25.2 (0.28.0+ has breaking changes)
 
 # ============================================================================
 # OCR (Photo Upload Feature)
