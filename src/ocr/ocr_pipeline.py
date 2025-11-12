@@ -16,7 +16,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 
 from .image_preprocessor import preprocess_image, PreprocessingConfig
-from .text_extractor import extract_text, OCRConfig
+from .text_extractor_with_timeout import extract_text, OCRConfig
 from .diagram_processor import process_diagram_for_ocr
 from src.models.uploaded_image import UploadedImage
 from src.models.agent_execution import AgentExecution, AgentType
