@@ -154,3 +154,4 @@ docs/_build/
 # Backup files
 *.bak
 *.backup
+crewai/
