@@ -8,6 +8,12 @@ WORKDIR /app
 
 # Install system dependencies for PaddleOCR and OpenCV
 RUN apt-get update && apt-get install -y \
+    # Build tools for PyMuPDF
+    build-essential \
+    gcc \
+    g++ \
+    make \
+    # Runtime libraries
     libgomp1 \
     libglib2.0-0 \
     libsm6 \
