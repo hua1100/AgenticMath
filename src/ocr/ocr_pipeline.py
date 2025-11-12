@@ -153,9 +153,12 @@ class OCRPipeline:
                 cv2.imwrite(preprocessed_path, preprocessed_image)
 
             # Stage 2: Text Extraction (OCR)
+            # Use longer timeout (180s) for first run to allow model downloads
             ocr_start = time.time()
             ocr_result = extract_text(
-                str(preprocessed_path), config=self.config.ocr_config
+                str(preprocessed_path),
+                config=self.config.ocr_config,
+                timeout=180  # 3 minutes for model download on first run
             )
             ocr_time_ms = int((time.time() - ocr_start) * 1000)
 
