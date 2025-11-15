@@ -118,15 +118,19 @@ class ProblemGenerator:
                 request.num_questions
             )
         else:
-            # 第五阶段：不足则补充（迭代或警告）
+            # 第五阶段：不足则补充（迭代改进）
             print(f"\n⚠️  合格题目不足（{len(qualified)}/{request.num_questions}）")
-            selected = qualified
 
             if self.iteration_manager:
-                print(f"🔄 尝试改进低分题目...")
-                # TODO: 实现迭代改进逻辑
+                print(f"🔄 嘗試改進低分題目...")
+                selected = self._improve_until_enough(
+                    qualified,
+                    variants_with_scores,
+                    request
+                )
             else:
-                print(f"ℹ️  返回所有合格题目")
+                print(f"ℹ️  無 IterationManager，返回所有合格題目")
+                selected = qualified
 
         # 构建结果
         result = GenerationResult(
@@ -286,6 +290,114 @@ class ProblemGenerator:
                         break
 
         return selected[:num_select]
+
+    def _improve_until_enough(
+        self,
+        qualified: List[QualifiedProblem],
+        all_variants: List[ProblemVariant],
+        request: UserRequest
+    ) -> List[QualifiedProblem]:
+        """
+        當合格題目不足時，對低分題目迭代改進
+
+        策略：
+        1. 從未達標的題目中選擇最接近目標的
+        2. 進入 Review-Revise 循環
+        3. 直到達標或達到最大迭代次數
+        4. 持續改進直到有足夠的題目
+
+        Args:
+            qualified: 已經合格的題目列表
+            all_variants: 所有生成的變體
+            request: 用戶請求
+
+        Returns:
+            補足後的題目列表
+        """
+        selected = qualified.copy()
+        need_more = request.num_questions - len(qualified)
+
+        print(f"   需要補充 {need_more} 個題目")
+
+        # 找出所有未達標的題目
+        qualified_contents = {q.variant.content for q in qualified}
+        unqualified = [
+            v for v in all_variants
+            if v.content not in qualified_contents
+        ]
+
+        if not unqualified:
+            print(f"   ⚠️  沒有未達標的題目可以改進")
+            return selected
+
+        # 按"接近度"排序（分數優先，難度接近度次之）
+        def closeness_score(variant: ProblemVariant) -> Tuple[float, float]:
+            # 返回 (負分數, 難度差異) - 越小越好
+            difficulty_diff = abs(variant.difficulty - request.target_difficulty)
+            return (-variant.review_score, difficulty_diff)
+
+        unqualified.sort(key=closeness_score)
+
+        print(f"   📝 找到 {len(unqualified)} 個未達標題目，開始改進...")
+
+        # 對最有潛力的題目迭代改進（嘗試 2 倍所需數量）
+        attempts = min(len(unqualified), need_more * 2)
+
+        for i, variant in enumerate(unqualified[:attempts]):
+            if len(selected) >= request.num_questions:
+                print(f"   ✅ 已達到目標題數 {request.num_questions}")
+                break
+
+            print(f"\n   🔄 改進題目 {i+1}/{attempts}（當前分數: {variant.review_score:.1f}）")
+
+            try:
+                # 使用 IterationManager 進行迭代改進
+                iteration_result = self.iteration_manager.iterate_until_quality(
+                    initial_question=variant.content,
+                    problem_id=None  # 可選：如果有 DB 可以傳入
+                )
+
+                improved_score = iteration_result.final_score
+
+                print(f"      迭代 {iteration_result.iteration_count} 次，最終分數: {improved_score:.1f}")
+
+                # 檢查是否達標
+                if improved_score >= request.min_quality_score:
+                    # 創建改進後的題目
+                    improved_variant = ProblemVariant(
+                        content=iteration_result.final_question,
+                        difficulty=variant.difficulty,  # 難度保持不變
+                        variant_type=variant.variant_type,
+                        core_concept=variant.core_concept,
+                        review_score=improved_score
+                    )
+
+                    # 加入選中列表
+                    selected.append(QualifiedProblem(
+                        variant=improved_variant,
+                        score=improved_score,
+                        difficulty=variant.difficulty,
+                        review_details={
+                            "iteration_count": iteration_result.iteration_count,
+                            "status": iteration_result.final_status.value
+                        }
+                    ))
+
+                    print(f"      ✅ 改進成功！已加入選中列表（{len(selected)}/{request.num_questions}）")
+                else:
+                    print(f"      ❌ 改進後仍未達標（{improved_score:.1f} < {request.min_quality_score}）")
+
+            except Exception as e:
+                print(f"      ⚠️  改進失敗: {e}")
+                continue
+
+        final_count = len(selected)
+        if final_count < request.num_questions:
+            print(f"\n   ⚠️  最終只有 {final_count}/{request.num_questions} 個題目達標")
+        else:
+            print(f"\n   ✅ 成功補足到 {final_count} 個題目！")
+
+        return selected[:request.num_questions]
 
     def _to_dict(self, problem: QualifiedProblem) -> Dict[str, Any]:
         """转换为字典"""

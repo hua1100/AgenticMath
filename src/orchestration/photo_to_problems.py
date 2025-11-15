@@ -108,7 +108,22 @@ class PhotoToProblemsOrchestrator:
             llm_client=self.llm_client,
             db=db_session
         )
-        self.iteration_manager = IterationManager()
+
+        # 需要 ReviseAgent 來進行迭代改進
+        from src.agents.revise_agent import ReviseAgent
+        self.revise_agent = ReviseAgent(
+            llm_client=self.llm_client,
+            db=db_session
+        )
+
+        # 初始化 IterationManager（傳入必要的 agents）
+        self.iteration_manager = IterationManager(
+            review_agent=self.review_agent,
+            revise_agent=self.revise_agent,
+            quality_threshold=4.5,  # 默認質量門檻
+            max_iterations=3,  # 最多迭代 3 次
+            db_session=db_session
+        )
 
         # 初始化生成器
         self.problem_generator = ProblemGenerator(
