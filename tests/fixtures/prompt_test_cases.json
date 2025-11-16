@@ -1,0 +1,277 @@
+{
+  "version": "1.0",
+  "description": "Solver Agent Prompt 測試數據集",
+  "created": "2024-02-15",
+  "test_cases": [
+    {
+      "id": "algebra_basic_001",
+      "category": "代數",
+      "difficulty": 1,
+      "question": "解方程：2x + 3 = 11",
+      "expected_answer": "4",
+      "expected_steps": ["移項", "計算", "求解"],
+      "notes": "最基本的一元一次方程"
+    },
+    {
+      "id": "algebra_basic_002",
+      "category": "代數",
+      "difficulty": 1,
+      "question": "解方程：5x - 12 = 18",
+      "expected_answer": "6",
+      "expected_steps": ["移項", "計算", "求解"],
+      "notes": "基本一元一次方程"
+    },
+    {
+      "id": "algebra_basic_003",
+      "category": "代數",
+      "difficulty": 1,
+      "question": "解方程：7x = 35",
+      "expected_answer": "5",
+      "expected_steps": ["兩邊除以7", "求解"],
+      "notes": "最簡單的一元一次方程"
+    },
+    {
+      "id": "algebra_basic_004",
+      "category": "代數",
+      "difficulty": 1,
+      "question": "解方程：x + 15 = 23",
+      "expected_answer": "8",
+      "expected_steps": ["移項", "求解"],
+      "notes": "簡單加法方程"
+    },
+    {
+      "id": "algebra_basic_005",
+      "category": "代數",
+      "difficulty": 1,
+      "question": "解方程：4x - 8 = 12",
+      "expected_answer": "5",
+      "expected_steps": ["移項", "計算", "求解"],
+      "notes": "基本一元一次方程"
+    },
+    {
+      "id": "algebra_fraction_001",
+      "category": "代數",
+      "difficulty": 2,
+      "question": "解方程：(x+2)/3 = 5",
+      "expected_answer": "13",
+      "expected_steps": ["去分母", "移項", "求解"],
+      "notes": "包含分數的方程"
+    },
+    {
+      "id": "algebra_fraction_002",
+      "category": "代數",
+      "difficulty": 2,
+      "question": "解方程：x/4 = 7",
+      "expected_answer": "28",
+      "expected_steps": ["兩邊乘以4", "求解"],
+      "notes": "簡單分數方程"
+    },
+    {
+      "id": "algebra_fraction_003",
+      "category": "代數",
+      "difficulty": 2,
+      "question": "解方程：(2x - 1)/5 = 3",
+      "expected_answer": "8",
+      "expected_steps": ["去分母", "移項", "求解"],
+      "notes": "分數方程，含括號"
+    },
+    {
+      "id": "algebra_distributive_001",
+      "category": "代數",
+      "difficulty": 2,
+      "question": "解方程：3(x + 2) = 15",
+      "expected_answer": "3",
+      "expected_steps": ["展開括號", "移項", "求解"],
+      "notes": "分配律應用"
+    },
+    {
+      "id": "algebra_distributive_002",
+      "category": "代數",
+      "difficulty": 2,
+      "question": "解方程：2(x - 4) + 3 = 11",
+      "expected_answer": "8",
+      "expected_steps": ["展開括號", "合併同類項", "移項", "求解"],
+      "notes": "分配律加合併同類項"
+    },
+    {
+      "id": "geometry_pythagorean_001",
+      "category": "幾何",
+      "difficulty": 2,
+      "question": "直角三角形的兩條直角邊分別為6和8，求斜邊長度。",
+      "expected_answer": "10",
+      "expected_steps": ["應用勾股定理", "計算平方和", "開方"],
+      "notes": "勾股定理基本應用"
+    },
+    {
+      "id": "geometry_pythagorean_002",
+      "category": "幾何",
+      "difficulty": 2,
+      "question": "直角三角形的兩條直角邊分別為3和4，求斜邊長度。",
+      "expected_answer": "5",
+      "expected_steps": ["應用勾股定理", "計算平方和", "開方"],
+      "notes": "經典3-4-5三角形"
+    },
+    {
+      "id": "geometry_pythagorean_003",
+      "category": "幾何",
+      "difficulty": 2,
+      "question": "直角三角形的斜邊長13，一條直角邊長5，求另一條直角邊長度。",
+      "expected_answer": "12",
+      "expected_steps": ["應用勾股定理", "計算平方差", "開方"],
+      "notes": "已知斜邊求直角邊"
+    },
+    {
+      "id": "geometry_rectangle_001",
+      "category": "幾何",
+      "difficulty": 3,
+      "question": "一個長方形花園的長度比寬度的兩倍多3米。如果花園的周長是22米，求花園的寬度。將答案四捨五入到小數點後兩位。",
+      "expected_answer": "2.67",
+      "expected_steps": ["定義變量", "建立方程", "代入周長公式", "求解", "驗證"],
+      "notes": "複雜應用題，需要建模"
+    },
+    {
+      "id": "geometry_area_001",
+      "category": "幾何",
+      "difficulty": 2,
+      "question": "長方形的面積是48平方米，長是12米，求寬是多少米。",
+      "expected_answer": "4",
+      "expected_steps": ["應用面積公式", "列方程", "求解"],
+      "notes": "面積公式應用"
+    },
+    {
+      "id": "algebra_absolute_001",
+      "category": "代數",
+      "difficulty": 3,
+      "question": "解方程：|x| + 2 = 5",
+      "expected_answer": "3 或 -3",
+      "expected_steps": ["分情況討論", "情況1求解", "情況2求解", "驗證"],
+      "notes": "多解問題，需要分類討論"
+    },
+    {
+      "id": "algebra_absolute_002",
+      "category": "代數",
+      "difficulty": 3,
+      "question": "解方程：|x - 1| = 4",
+      "expected_answer": "5 或 -3",
+      "expected_steps": ["分情況討論", "情況1求解", "情況2求解", "驗證"],
+      "notes": "絕對值方程，多解"
+    },
+    {
+      "id": "word_problem_001",
+      "category": "應用題",
+      "difficulty": 3,
+      "question": "小明有一些糖果，如果每天吃5顆，可以吃12天。如果每天吃6顆，可以吃幾天？",
+      "expected_answer": "10",
+      "expected_steps": ["計算總數", "除法計算", "求解"],
+      "notes": "實際應用問題"
+    },
+    {
+      "id": "word_problem_002",
+      "category": "應用題",
+      "difficulty": 3,
+      "question": "一輛汽車以每小時60公里的速度行駛，3小時後到達目的地。如果以每小時80公里的速度行駛，需要多少小時到達？",
+      "expected_answer": "2.25",
+      "expected_steps": ["計算總距離", "計算時間", "求解"],
+      "notes": "速度距離時間問題"
+    },
+    {
+      "id": "word_problem_003",
+      "category": "應用題",
+      "difficulty": 3,
+      "question": "買3支筆和2本筆記本共花費45元，一支筆5元，一本筆記本多少元？",
+      "expected_answer": "15",
+      "expected_steps": ["計算筆的總價", "計算剩餘金額", "除以數量", "求解"],
+      "notes": "購物應用題"
+    },
+    {
+      "id": "chinese_language_001",
+      "category": "語言理解",
+      "difficulty": 2,
+      "question": "三個 x 加上五等於十四，求 x",
+      "expected_answer": "3",
+      "expected_steps": ["理解題意", "列方程", "求解"],
+      "notes": "測試中文語言理解"
+    },
+    {
+      "id": "chinese_language_002",
+      "category": "語言理解",
+      "difficulty": 2,
+      "question": "某數的兩倍減去七等於十一，求這個數",
+      "expected_answer": "9",
+      "expected_steps": ["理解題意", "列方程", "求解"],
+      "notes": "中文敘述轉換為方程"
+    },
+    {
+      "id": "proportion_001",
+      "category": "比例",
+      "difficulty": 2,
+      "question": "如果 x:5 = 6:3，求 x",
+      "expected_answer": "10",
+      "expected_steps": ["交叉相乘", "列方程", "求解"],
+      "notes": "比例基本題"
+    },
+    {
+      "id": "proportion_002",
+      "category": "比例",
+      "difficulty": 2,
+      "question": "兩個數的比是2:3，較小的數是14，求較大的數",
+      "expected_answer": "21",
+      "expected_steps": ["設立比例", "求解"],
+      "notes": "比例應用"
+    },
+    {
+      "id": "system_equations_001",
+      "category": "二元一次方程",
+      "difficulty": 4,
+      "question": "解方程組：x + y = 10, x - y = 2",
+      "expected_answer": "x=6, y=4",
+      "expected_steps": ["加減消元法", "求解x", "代入求y", "驗證"],
+      "notes": "二元一次方程組"
+    },
+    {
+      "id": "percentage_001",
+      "category": "百分比",
+      "difficulty": 2,
+      "question": "80的25%是多少？",
+      "expected_answer": "20",
+      "expected_steps": ["將百分比轉換為小數", "乘法計算"],
+      "notes": "百分比基本計算"
+    },
+    {
+      "id": "percentage_002",
+      "category": "百分比",
+      "difficulty": 3,
+      "question": "某商品打八折後售價為240元，原價是多少元？",
+      "expected_answer": "300",
+      "expected_steps": ["理解折扣概念", "列方程", "求解"],
+      "notes": "百分比應用題"
+    },
+    {
+      "id": "age_problem_001",
+      "category": "應用題",
+      "difficulty": 3,
+      "question": "媽媽今年36歲，女兒今年12歲，幾年前媽媽的年齡是女兒的4倍？",
+      "expected_answer": "6",
+      "expected_steps": ["設立變量", "列方程", "求解", "驗證"],
+      "notes": "年齡問題"
+    },
+    {
+      "id": "mixed_operations_001",
+      "category": "代數",
+      "difficulty": 3,
+      "question": "解方程：3(2x - 1) + 2(x + 4) = 29",
+      "expected_answer": "4",
+      "expected_steps": ["展開括號", "合併同類項", "移項", "求解"],
+      "notes": "綜合運算"
+    },
+    {
+      "id": "decimal_001",
+      "category": "代數",
+      "difficulty": 2,
+      "question": "解方程：0.5x + 1.2 = 3.7",
+      "expected_answer": "5",
+      "expected_steps": ["移項", "計算", "求解"],
+      "notes": "小數方程"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:14-alpine
+    container_name: agenticmath-db
+    environment:
+      POSTGRES_DB: agenticmath
+      POSTGRES_USER: agenticmath_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agenticmath_user -d agenticmath"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agenticmath-network
+
+  # AgenticMath Application (API mode)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agenticmath-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # LLM Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o}
+      OPENAI_TEMPERATURE: ${OPENAI_TEMPERATURE:-0.7}
+
+      # Database
+      DATABASE_URL: postgresql://agenticmath_user:${DB_PASSWORD:-changeme}@db:5432/agenticmath
+      DATABASE_POOL_SIZE: ${DATABASE_POOL_SIZE:-10}
+      DATABASE_MAX_OVERFLOW: ${DATABASE_MAX_OVERFLOW:-20}
+
+      # Quality Control
+      QUALITY_THRESHOLD: ${QUALITY_THRESHOLD:-4.5}
+      MAX_REVISE_ITERATIONS: ${MAX_REVISE_ITERATIONS:-5}
+
+      # OCR Settings
+      OCR_LANGUAGE: ${OCR_LANGUAGE:-chinese_cht}
+      OCR_USE_GPU: ${OCR_USE_GPU:-false}
+
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      LOG_FILE: logs/agenticmath.log
+
+      # Environment
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      DEBUG: ${DEBUG:-false}
+    volumes:
+      - ./logs:/app/logs
+      - ./uploads:/app/uploads
+      - ./agenticmath.db:/app/agenticmath.db  # For SQLite fallback
+    ports:
+      - "8000:8000"
+    command: uvicorn src.api.server:app --host 0.0.0.0 --port 8000 --workers 4
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - agenticmath-network
+
+  # Nginx Reverse Proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: agenticmath-nginx
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    restart: unless-stopped
+    networks:
+      - agenticmath-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  agenticmath-network:
+    driver: bridge
