@@ -5,6 +5,7 @@ This module provides:
 - Problem creation from OCR results
 - Problem rephrase orchestration (CrewAI-based and custom)
 - Quality control workflows
+- Solution generation pipeline
 - Agent coordination
 """
 
@@ -24,6 +25,10 @@ from .crewai_pipeline import (
     CrewAIPipeline,
     AgentToolkit,
 )
+from .solution_pipeline import (
+    SolutionPipeline,
+    generate_solutions,
+)
 
 
 __all__ = [
@@ -35,4 +40,6 @@ __all__ = [
     "PipelineResult",
     "CrewAIPipeline",
     "AgentToolkit",
+    "SolutionPipeline",
+    "generate_solutions",
 ]
