@@ -1,0 +1,33 @@
+{
+  "name": "agenticmath",
+  "description": "AI-powered math problem generator and solver",
+  "build_command": "docker build -t agenticmath .",
+  "start_command": "uvicorn src.api.server:app --host 0.0.0.0 --port ${PORT:-8000}",
+  "health_check": {
+    "path": "/health",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3
+  },
+  "env": {
+    "ENVIRONMENT": "production",
+    "DEBUG": "false",
+    "LOG_LEVEL": "info",
+    "API_HOST": "0.0.0.0",
+    "API_PORT": "${PORT:-8000}"
+  },
+  "resources": {
+    "cpu": "0.5",
+    "memory": "1024"
+  },
+  "volumes": [
+    {
+      "path": "/app/logs",
+      "size": "5GB"
+    },
+    {
+      "path": "/app/uploads",
+      "size": "10GB"
+    }
+  ]
+}
